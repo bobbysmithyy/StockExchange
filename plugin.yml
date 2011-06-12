@@ -1,0 +1,12 @@
+name: StockExchange
+main: me.ChrizC.stockexchange.StockExchange
+version: 1.0
+author: ChrizC
+description: StockExchange.
+commands:
+  stocks:
+    description: Interact with stocks.
+    usage: <command> <top5|add|remove|increase|decrease|lookup|buy|sell|stop|start>
+    aliases:
+      - market
+      - stock
