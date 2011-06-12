@@ -30,15 +30,23 @@ public class SEScheduleHandler {
                 if (size != 0) {
                     Random random = new Random();
                     int randomInt = random.nextInt(size);
+                    int negOrPos = random.nextInt(2);
                     double randomFluc = minimum + (random.nextDouble() * (maximum - minimum));
                     int i = 0;
                     Iterator<String> iterator = plugin.market.keySet().iterator();
                     while (iterator.hasNext()) { 
                         String s = iterator.next();
                         if (i == randomInt) {
-                            plugin.market.put(s, plugin.market.get(s) + randomFluc);
-                            if (broadcasting == true) {
-                                Bukkit.getServer().broadcastMessage(ChatColor.DARK_PURPLE + "[Stocks] The " + ChatColor.YELLOW + s + ChatColor.DARK_PURPLE + " stock has risen by " + ChatColor.YELLOW + economyManager.economy.format(randomFluc));
+                            if (negOrPos == 1) {
+                                plugin.market.put(s, plugin.market.get(s) + randomFluc);
+                                if (broadcasting == true) {
+                                    Bukkit.getServer().broadcastMessage(ChatColor.DARK_PURPLE + "[Stocks] The " + ChatColor.YELLOW + s + ChatColor.DARK_PURPLE + " stock has risen by " + ChatColor.YELLOW + economyManager.economy.format(randomFluc));
+                                }
+                            } else {
+                                plugin.market.put(s, plugin.market.get(s) - randomFluc);
+                                if (broadcasting == true) {
+                                    Bukkit.getServer().broadcastMessage(ChatColor.DARK_PURPLE + "[Stocks] The " + ChatColor.YELLOW + s + ChatColor.DARK_PURPLE + " stock has fallen by " + ChatColor.YELLOW + economyManager.economy.format(randomFluc));
+                                }
                             }
                         }
                     
