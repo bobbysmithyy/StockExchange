@@ -34,9 +34,13 @@ public class SECommandListener {
         CommandExecutor commandExecutor = new CommandExecutor() {
             public boolean onCommand( CommandSender sender, Command command, String label, String[] args ) {
                 if (sender instanceof Player) {
-                    player = (Player)sender;
+                    if (args.length > 0) {
+                        stocks(sender, args);
+                    }
+                } else {
+                    consolestocks(sender, args);
                 }
-                stocks(sender, args);
+                
                   
                 return true;
             }
@@ -48,7 +52,7 @@ public class SECommandListener {
     
     public void stocks(CommandSender event, String[] args) {
         player = (Player) event;
-        if (args != null) {
+        if (args.length >= 1) {
             if (args[0].equals("top5")) {
                 if (plugin.permissionHandler != null && plugin.permissionHandler.has(player, "stocks.users.top5")) {
                     marketHandler.top5(event);
@@ -57,31 +61,31 @@ public class SECommandListener {
                 }
             } else if (args[0].equals("add")) {
                 if (plugin.permissionHandler != null && plugin.permissionHandler.has(player, "stocks.admin.add")) {
-                    if (args[2] == null) {
-                        marketHandler.add(player, args[1], 1.0D);
-                    } else {
+                    if (args.length == 2) {
+                        marketHandler.add(player, args[1], 1.0);
+                    } else if (args.length >= 3) {
                         marketHandler.add(player, args[1], Double.parseDouble(args[2]));
                     }
                 } else if (plugin.permissionHandler == null && player.isOp()) {
-                    if (args[2] == null) {
-                        marketHandler.add(player, args[1], 1.0D);
-                    } else {
+                    if (args.length == 2) {
+                        marketHandler.add(player, args[1], 1.0);
+                    } else if (args.length >= 3) {
                         marketHandler.add(player, args[1], Double.parseDouble(args[2]));
                     }
                 } 
-            } else if (args[0].equals("remove")) {
+            } else if (args[0].equals("remove") && args.length > 1) {
                 if (plugin.permissionHandler != null && plugin.permissionHandler.has(player, "stocks.admin.remove")) {
                     marketHandler.remove(player, args[1]);
                 } else if (plugin.permissionHandler == null && player.isOp()) {
                     marketHandler.remove(player, args[1]);
                 }
-            } else if (args[0].equals("lookup")) {
+            } else if (args[0].equals("lookup") && args.length > 1) {
                 if (plugin.permissionHandler != null && plugin.permissionHandler.has(player, "stocks.users.lookup")) {
                     marketHandler.lookup(player, args[1]);
                 } else if (plugin.permissionHandler == null) {
                     marketHandler.lookup(player, args[1]);
                 } 
-            } else if (args[0].equals("buy")) {
+            } else if (args[0].equals("buy") && args.length > 2) {
                 if (plugin.permissionHandler != null && plugin.permissionHandler.has(player, "stocks.users.trade")) {
                     if (args[2].equals("max")) {
                         marketHandler.buymax(player, args[1]);
@@ -95,7 +99,7 @@ public class SECommandListener {
                         marketHandler.buy(player, args[1], Integer.parseInt(args[2]));
                     }
                 } 
-            } else if (args[0].equals("sell")) {
+            } else if (args[0].equals("sell") && args.length > 2) {
                 if (plugin.permissionHandler != null && plugin.permissionHandler.has(player, "stocks.users.trade")) {
                     if (args[2].equals("all")) {
                         marketHandler.sellall(player, args[1]);
@@ -109,13 +113,13 @@ public class SECommandListener {
                         marketHandler.sell(player, args[1], Integer.parseInt(args[2]));
                     }
                 } 
-            } else if (args[0].equals("increase")) {
+            } else if (args[0].equals("increase") && args.length > 2) {
                 if (plugin.permissionHandler != null && plugin.permissionHandler.has(player, "stocks.admin.modify")) {
                     marketHandler.increase(player, args[1], Double.parseDouble(args[2]));
                 } else if (plugin.permissionHandler == null && player.isOp()) {
                     marketHandler.increase(player, args[1], Double.parseDouble(args[2]));
                 } 
-            } else if (args[0].equals("decrease")) {
+            } else if (args[0].equals("decrease") && args.length > 2) {
                 if (plugin.permissionHandler != null && plugin.permissionHandler.has(player, "stocks.admin.modify")) {
                     marketHandler.decrease(player, args[1], Double.parseDouble(args[2]));
                 } else if (plugin.permissionHandler == null && player.isOp()) {
@@ -149,6 +153,41 @@ public class SECommandListener {
                             scheduleHandler.fluctuate(config.min, config.max, config.delay, config.broadcast);
                             player.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] Stock fluctuations started!");
                         }
+                    }
+                }
+            }
+        }
+    }
+    
+    public void consolestocks(CommandSender event, String[] args) {
+        if (args.length >= 1) {
+            if (args[0].equals("top5")) {
+                marketHandler.top5(event);
+            } else if (args[0].equals("add")) {
+                if (args.length == 2) {
+                    marketHandler.add(event, args[1], 1.0);
+                } else if (args.length >= 3) {
+                    marketHandler.add(event, args[1], Double.parseDouble(args[2]));
+                }
+            } else if (args[0].equals("remove") && args.length > 1) {
+                marketHandler.remove(event, args[1]);
+            } else if (args[0].equals("lookup") && args.length > 1) {
+                marketHandler.lookup(event, args[1]);
+            } else if (args[0].equals("increase") && args.length > 2) {
+                marketHandler.increase(event, args[1], Double.parseDouble(args[2]));
+            } else if (args[0].equals("decrease") && args.length > 2) {
+                marketHandler.decrease(event, args[1], Double.parseDouble(args[2]));
+            } else if (args[0].equals("stop")) {
+                if (scheduleHandler.taskId != 0) {
+                    Bukkit.getServer().getScheduler().cancelTask(scheduleHandler.taskId);
+                    scheduleHandler.taskId = 0;
+                    event.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] Stock fluctuations stopped!");
+                }
+            } else if (args[0].equals("start")) {
+                if (config.flucsEnabled == true) {
+                    if (scheduleHandler.taskId == 0) {
+                        scheduleHandler.fluctuate(config.min, config.max, config.delay, config.broadcast);
+                        event.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] Stock fluctuations started!");
                     }
                 }
             }

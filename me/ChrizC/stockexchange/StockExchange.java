@@ -9,6 +9,8 @@ import org.bukkit.plugin.Plugin;
 
 import java.util.HashMap;
 
+import com.nijikokun.register.payment.Method;
+
 import com.nijiko.permissions.PermissionHandler;
 import com.nijikokun.bukkit.Permissions.Permissions;
 import org.bukkit.Bukkit;
@@ -19,11 +21,11 @@ public class StockExchange extends JavaPlugin {
     private final SEConfig config = new SEConfig(this);
     private final SEScheduleHandler scheduleHandler = new SEScheduleHandler(this);
     private final SEMarketHandler marketHandler = new SEMarketHandler(this);
-    private final SEPluginListener pluginListener = new SEPluginListener();
+    private final SEPluginListener pluginListener = new SEPluginListener(this);
     private final SECommandListener cmdHandler = new SECommandListener(this, marketHandler, scheduleHandler, config);
     private final SEFileHandler fileHandler = new SEFileHandler(this);
     private final SEUpdater updater = new SEUpdater(this, config);
-    public com.nijikokun.register.payment.Method Method;
+    public Method Method = null;
     
     HashMap<String, Double> market = new HashMap<String, Double>();
     HashMap<String, Integer> stockOwnership = new HashMap<String, Integer>();
@@ -42,6 +44,7 @@ public class StockExchange extends JavaPlugin {
     public void onEnable() {
         PluginManager pm = getServer().getPluginManager();
         pm.registerEvent(Event.Type.PLUGIN_ENABLE, pluginListener, Priority.Monitor, this);
+        pm.registerEvent(Event.Type.PLUGIN_DISABLE, pluginListener, Priority.Monitor, this);
         config.doConfig();
         updater.update(true);
         cmdHandler.setupCommands();

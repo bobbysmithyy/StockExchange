@@ -40,12 +40,15 @@ public class SEScheduleHandler {
                             if (negOrPos == 1) {
                                 plugin.market.put(s, plugin.market.get(s) + randomFluc);
                                 if (broadcasting == true) {
-                                    Bukkit.getServer().broadcastMessage(ChatColor.DARK_PURPLE + "[Stocks] The " + ChatColor.YELLOW + s + ChatColor.DARK_PURPLE + " stock has risen by " + ChatColor.YELLOW + economyManager.economy.format(randomFluc));
+                                    Bukkit.getServer().broadcastMessage(ChatColor.DARK_PURPLE + "[Stocks] The " + ChatColor.YELLOW + s + ChatColor.DARK_PURPLE + " stock has risen by " + ChatColor.YELLOW + plugin.Method.format(randomFluc));
                                 }
                             } else {
-                                plugin.market.put(s, plugin.market.get(s) - randomFluc);
-                                if (broadcasting == true) {
-                                    Bukkit.getServer().broadcastMessage(ChatColor.DARK_PURPLE + "[Stocks] The " + ChatColor.YELLOW + s + ChatColor.DARK_PURPLE + " stock has fallen by " + ChatColor.YELLOW + economyManager.economy.format(randomFluc));
+                                double checker = plugin.market.get(s) - randomFluc;
+                                if (checker >= 0) {
+                                    plugin.market.put(s, plugin.market.get(s) - randomFluc);
+                                    if (broadcasting == true) {
+                                        Bukkit.getServer().broadcastMessage(ChatColor.DARK_PURPLE + "[Stocks] The " + ChatColor.YELLOW + s + ChatColor.DARK_PURPLE + " stock has fallen by " + ChatColor.YELLOW + plugin.Method.format(randomFluc));
+                                    }
                                 }
                             }
                         }
