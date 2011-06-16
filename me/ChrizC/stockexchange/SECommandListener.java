@@ -17,16 +17,18 @@ public class SECommandListener {
     SEMarketHandler marketHandler;
     SEScheduleHandler scheduleHandler;
     SEConfig config;
+    SEFileHandler fileHandler;
     
     Player player;
     
     List list = new ArrayList();
     
-    public SECommandListener(StockExchange instance, SEMarketHandler marketHandler, SEScheduleHandler scheduleHandler, SEConfig config) {
+    public SECommandListener(StockExchange instance, SEMarketHandler marketHandler, SEScheduleHandler scheduleHandler, SEConfig config, SEFileHandler fileHandler) {
         plugin = instance;
         this.marketHandler = marketHandler;
         this.scheduleHandler = scheduleHandler;
         this.config = config;
+        this.fileHandler = fileHandler;
     }
     
     public void setupCommands() {
@@ -189,6 +191,20 @@ public class SECommandListener {
                         scheduleHandler.fluctuate(config.min, config.max, config.delay, config.broadcast);
                         event.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] Stock fluctuations started!");
                     }
+                }
+            } else if (args[0].equals("rollback")) {
+                if (args.length == 2) {
+                    if (fileHandler.rollback(Integer.parseInt(args[1])) == true) {
+                        event.sendMessage("[Stocks] Successfully rolled back to backup #" + args[1]);
+                    } else {
+                        System.err.println("[Stocks] Error in rolling back to backup #" + args[1] + ". (Does the backup exist?)");
+                    }
+                }
+            } else if (args[0].equals("undo")) {
+                if (fileHandler.undo() == true) {
+                    event.sendMessage("[Stocks] Successfully undid rollback.");
+                } else {
+                    System.err.println("[Stocks] Unknown error in undoing rollback!");
                 }
             }
         }

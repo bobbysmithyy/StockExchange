@@ -18,12 +18,12 @@ import org.bukkit.Bukkit;
 public class StockExchange extends JavaPlugin {
     
     public static PermissionHandler permissionHandler;
+    private final SEFileHandler fileHandler = new SEFileHandler(this);
     private final SEConfig config = new SEConfig(this);
     private final SEScheduleHandler scheduleHandler = new SEScheduleHandler(this);
     private final SEMarketHandler marketHandler = new SEMarketHandler(this);
     private final SEPluginListener pluginListener = new SEPluginListener(this);
-    private final SECommandListener cmdHandler = new SECommandListener(this, marketHandler, scheduleHandler, config);
-    private final SEFileHandler fileHandler = new SEFileHandler(this);
+    private final SECommandListener cmdHandler = new SECommandListener(this, marketHandler, scheduleHandler, config, fileHandler);
     private final SEUpdater updater = new SEUpdater(this, config);
     public Method Method = null;
     
