@@ -157,6 +157,8 @@ public class SECommandListener {
                         }
                     }
                 }
+            } else if (args[0].equals("portfolio") || args[0].equals("showmine")) {
+                marketHandler.portfolio(player);
             }
         }
     }

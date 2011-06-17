@@ -45,12 +45,12 @@ public class SEUpdater {
                         }
                     }, 20L);
                 } else {
-                    if (sendToConsole == true) {
+                    if (sendToConsole == true && config.verbose == true) {
                         System.out.println("[StockExchange] is up to date.");
                     }
                 }
             } catch (MalformedURLException e) {
-                System.err.println("[StockExchange] Please check the URL:" + e.toString() );
+                System.err.println("[StockExchange] Please check the URL: " + e.toString() );
             } catch (IOException e1) {
                 System.err.println("[StockExchange] Can't read from the Internet: "+ e1.toString() );
             }

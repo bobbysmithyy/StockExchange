@@ -17,11 +17,23 @@ import org.bukkit.Bukkit;
 
 public class StockExchange extends JavaPlugin {
     
+    /**
+     * To-do list:
+     * TODO Add command to change stock limits.
+     * TODO Add good/poor economic forecasts.
+     * TODO Add bank account linking.
+     * TODO Add buy/sales charges.
+     * TODO Add refund on /remove
+     * TODO Add private stocks.
+     * TODO Add gifting stocks.
+     * TODO Make API.
+     **/
+    
     public static PermissionHandler permissionHandler;
-    private final SEFileHandler fileHandler = new SEFileHandler(this);
     private final SEConfig config = new SEConfig(this);
+    private final SEFileHandler fileHandler = new SEFileHandler(this, config);
     private final SEScheduleHandler scheduleHandler = new SEScheduleHandler(this);
-    private final SEMarketHandler marketHandler = new SEMarketHandler(this);
+    private final SEMarketHandler marketHandler = new SEMarketHandler(this, config);
     private final SEPluginListener pluginListener = new SEPluginListener(this);
     private final SECommandListener cmdHandler = new SECommandListener(this, marketHandler, scheduleHandler, config, fileHandler);
     private final SEUpdater updater = new SEUpdater(this, config);
@@ -51,6 +63,7 @@ public class StockExchange extends JavaPlugin {
         setupPermissions();
         fileHandler.loadMarket();
         fileHandler.loadOwnership();
+        config.configStocks();
         if (config.flucsEnabled == true) {
             scheduleHandler.fluctuate(config.min, config.max, config.delay, config.broadcast);
         }
