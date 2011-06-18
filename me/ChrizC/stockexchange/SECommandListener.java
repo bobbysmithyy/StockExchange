@@ -157,6 +157,16 @@ public class SECommandListener {
                         }
                     }
                 }
+            } else if (args[0].equals("portfolio") || args[0].equals("showmine")) {
+                marketHandler.portfolio(player);
+            } else if (args[0].equals("limit")) {
+                if (args.length == 3) {
+                    if (plugin.permissionHandler != null && plugin.permissionHandler.has(player, "stocks.admin.limit")) {
+                        marketHandler.limit(event, args[1], Integer.parseInt(args[2]));
+                    } else if (plugin.permissionHandler == null && player.isOp()) {
+                        marketHandler.limit(event, args[1], Integer.parseInt(args[2]));
+                    }
+                }
             }
         }
     }
@@ -205,6 +215,10 @@ public class SECommandListener {
                     event.sendMessage("[Stocks] Successfully undid rollback.");
                 } else {
                     System.err.println("[Stocks] Unknown error in undoing rollback!");
+                }
+            } else if (args[0].equals("limit")) {
+                if (args.length == 3) {
+                    marketHandler.limit(event, args[1], Integer.parseInt(args[2]));
                 }
             }
         }

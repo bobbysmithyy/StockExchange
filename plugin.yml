@@ -1,12 +1,12 @@
 name: StockExchange
 main: me.ChrizC.stockexchange.StockExchange
-version: 1.1
+version: 1.3
 author: ChrizC
 description: StockExchange allows your users to trade in fictional stocks, making a profit in your in-game economy!
 commands:
   stocks:
     description: Interact with stocks.
-    usage: <command> <top5|add|remove|increase|decrease|lookup|buy|sell|stop|start>
+    usage: <command> <top5|add|remove|increase|decrease|lookup|buy|sell|stop|start|limit>
     aliases:
       - market
       - stock

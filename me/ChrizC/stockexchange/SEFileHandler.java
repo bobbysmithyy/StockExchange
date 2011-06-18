@@ -13,13 +13,15 @@ import java.util.HashMap;
 public class SEFileHandler {
     
     private final StockExchange plugin;
+    SEConfig config;
     
     File file;
     File backup;
     File backup2;
     
-    public SEFileHandler(StockExchange instance) {
+    public SEFileHandler(StockExchange instance, SEConfig config) {
         plugin = instance;
+        this.config = config;
     }
     
     public void backup(String type) {
@@ -110,7 +112,10 @@ public class SEFileHandler {
                 ObjectOutputStream oos = new ObjectOutputStream(fos);
                    
                 oos.writeObject(plugin.market);
-                System.out.println("[StockExchange] Market data saved to file successfully.");
+                
+                if (config.verbose == true) {
+                    System.out.println("[StockExchange] Market data saved to file successfully.");
+                }
 
                 oos.close();
             } catch (IOException e) {
@@ -131,7 +136,10 @@ public class SEFileHandler {
                 ObjectInputStream ois = new ObjectInputStream(fis);
                 
                 plugin.market = new HashMap((HashMap)ois.readObject());
-                System.out.println("[StockExchange] Loaded market data successfully.");
+                
+                if (config.verbose == true) {
+                    System.out.println("[StockExchange] Loaded market data successfully.");
+                }
 
                 ois.close();
             }
@@ -151,7 +159,10 @@ public class SEFileHandler {
                 ObjectOutputStream oos = new ObjectOutputStream(fos);
                    
                 oos.writeObject(plugin.stockOwnership);
-                System.out.println("[StockExchange] Ownership data saved to file successfully.");
+                
+                if (config.verbose == true) {
+                    System.out.println("[StockExchange] Ownership data saved to file successfully.");
+                }
 
                 oos.close();
             } catch (IOException e) {
@@ -172,7 +183,9 @@ public class SEFileHandler {
                 ObjectInputStream ois = new ObjectInputStream(fis);
                 
                 plugin.stockOwnership = new HashMap((HashMap)ois.readObject());
-                System.out.println("[StockExchange] Loaded ownership data successfully.");
+                if (config.verbose == true) {
+                    System.out.println("[StockExchange] Loaded ownership data successfully.");
+                }
 
                 ois.close();
             }
