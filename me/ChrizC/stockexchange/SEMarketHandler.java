@@ -69,7 +69,7 @@ public class SEMarketHandler {
         if (!plugin.market.containsKey(marketName)) {
             sender.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] That stock doesn't exist!");
         } else {
-            sender.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] Current stock price for " + ChatColor.YELLOW + marketName + ChatColor.DARK_PURPLE + " is " + ChatColor.YELLOW + plugin.Method.format(plugin.market.get(marketName)) + ChatColor.DARK_PURPLE + "!");
+            sender.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] STOCK: " + ChatColor.YELLOW + marketName + ChatColor.DARK_PURPLE + " PRICE: " + ChatColor.YELLOW + plugin.Method.format(plugin.market.get(marketName)) + ChatColor.DARK_PURPLE + " OWNERSHIP LIMIT: " + ChatColor.YELLOW + config.checkLimit(marketName));
         }
     }
     
@@ -214,6 +214,16 @@ public class SEMarketHandler {
                 player.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] You own " + ChatColor.YELLOW + plugin.stockOwnership.get(s2) + ChatColor.DARK_PURPLE + " stocks in " + ChatColor.YELLOW + s2.replace(player.getName() + "_", ""));
                 x--;
             }
+        }
+    }
+    
+    public void limit(CommandSender event, String marketName, int limit) {
+        if (plugin.market.containsKey(marketName)) {
+            config.file.load();
+            config.file.setProperty("stocks.limits." + marketName, limit);
+            config.file.save();
+            config.configStocks();
+            event.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] Successfully changed the limit of " + ChatColor.YELLOW + marketName + ChatColor.DARK_PURPLE + " to " + ChatColor.YELLOW + limit + ChatColor.DARK_PURPLE + ".");
         }
     }
     

@@ -1,5 +1,6 @@
 package me.ChrizC.stockexchange;
 
+import org.bukkit.Bukkit;
 import org.bukkit.event.Event.*;
 import org.bukkit.event.*;
 import org.bukkit.plugin.PluginDescriptionFile;
@@ -13,13 +14,11 @@ import com.nijikokun.register.payment.Method;
 
 import com.nijiko.permissions.PermissionHandler;
 import com.nijikokun.bukkit.Permissions.Permissions;
-import org.bukkit.Bukkit;
 
 public class StockExchange extends JavaPlugin {
     
     /**
      * To-do list:
-     * TODO Add command to change stock limits.
      * TODO Add good/poor economic forecasts.
      * TODO Add bank account linking.
      * TODO Add buy/sales charges.
@@ -69,6 +68,10 @@ public class StockExchange extends JavaPlugin {
         }
         PluginDescriptionFile pdfFile = this.getDescription();
         System.out.println("[StockExchange] version v" + pdfFile.getVersion() + " is enabled.");
+        if (pdfFile.getVersion().contains("dev")) {
+            System.out.println("[StockExchange] Warning: you are using a DEVELOPMENT build.");
+            System.out.println("[StockExchange] Warning: Be sure to back up your worlds, and report all bugs to the thread.");
+        }
     }
     
     private void setupPermissions() {
@@ -82,5 +85,5 @@ public class StockExchange extends JavaPlugin {
                 System.out.println("[StockExchange] Permissions not found, defaulting to ops.txt");
             }
         }
-    }    
+    }  
 }
