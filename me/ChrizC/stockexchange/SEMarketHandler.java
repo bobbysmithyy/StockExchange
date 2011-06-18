@@ -46,6 +46,9 @@ public class SEMarketHandler {
                 config.file.load();
                 config.file.setProperty("stocks.limits." + marketName, 0);
                 config.file.save();
+                for (StockExchangeListener m : plugin.listeners) {
+                    m.onStockAddition(marketName, amount);
+                }
                 sender.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] Added stock " + ChatColor.YELLOW + marketName + ChatColor.DARK_PURPLE + " with stock price " + ChatColor.YELLOW + plugin.Method.format(amount));
             }
         }
@@ -55,12 +58,16 @@ public class SEMarketHandler {
         if (!plugin.market.containsKey(marketName)) {
             sender.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] That stock doesn't exist!");
         } else {
+            double amount = plugin.market.get(marketName);
             plugin.market.remove(marketName);
             config.file.load();
             if (config.file.getProperty("stocks.limits." + marketName) != null) {
                 config.file.removeProperty("stocks.limits." + marketName);
             }
             config.file.save();
+            for (StockExchangeListener m : plugin.listeners) {
+                m.onStockRemoval(marketName, amount);
+            }
             sender.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] Removed stock " + ChatColor.YELLOW + marketName + ChatColor.DARK_PURPLE + "!");
         }
     }
@@ -91,10 +98,16 @@ public class SEMarketHandler {
                     if (plugin.stockOwnership.containsKey(player.getName() + "_" + marketName)) {
                         plugin.stockOwnership.put(player.getName() + "_" + marketName, plugin.stockOwnership.get(player.getName() + "_" + marketName) + amount);
                         plugin.Method.getAccount(player.getName()).subtract(amount * plugin.market.get(marketName));
+                        for (StockExchangeListener m : plugin.listeners) {
+                            m.onStockPurchase(player, marketName, amount, plugin.market.get(marketName));
+                        }
                         player.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] Bought " + ChatColor.YELLOW + amount + ChatColor.DARK_PURPLE + " of " + ChatColor.YELLOW + marketName + ChatColor.DARK_PURPLE + " for " + ChatColor.YELLOW + plugin.Method.format(amount * plugin.market.get(marketName)) + ChatColor.DARK_PURPLE + "!");
                     } else {
                         plugin.stockOwnership.put(player.getName() + "_" + marketName, amount);
                         plugin.Method.getAccount(player.getName()).subtract(amount * plugin.market.get(marketName));
+                        for (StockExchangeListener m : plugin.listeners) {
+                            m.onStockPurchase(player, marketName, amount, plugin.market.get(marketName));
+                        }
                         player.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] Bought " + ChatColor.YELLOW + amount + ChatColor.DARK_PURPLE + " of " + ChatColor.YELLOW + marketName + ChatColor.DARK_PURPLE + " for " + ChatColor.YELLOW + plugin.Method.format(amount * plugin.market.get(marketName)) + ChatColor.DARK_PURPLE + "!");
                     }
                 }
@@ -121,10 +134,16 @@ public class SEMarketHandler {
                 if (plugin.stockOwnership.containsKey(player.getName() + "_" + marketName)) {
                     plugin.stockOwnership.put(player.getName() + "_" + marketName, plugin.stockOwnership.get(player.getName() + "_" + marketName) + amount);
                     plugin.Method.getAccount(player.getName()).subtract(amount * plugin.market.get(marketName));
+                    for (StockExchangeListener m : plugin.listeners) {
+                        m.onStockPurchase(player, marketName, amount, plugin.market.get(marketName));
+                    }
                     player.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] Bought " + ChatColor.YELLOW + amount + ChatColor.DARK_PURPLE + " of " + ChatColor.YELLOW + marketName + ChatColor.DARK_PURPLE + " for " + ChatColor.YELLOW + plugin.Method.format(amount * plugin.market.get(marketName)) + ChatColor.DARK_PURPLE + "!");
                 } else {
                     plugin.stockOwnership.put(player.getName() + "_" + marketName, amount);
                     plugin.Method.getAccount(player.getName()).subtract(amount * plugin.market.get(marketName));
+                    for (StockExchangeListener m : plugin.listeners) {
+                        m.onStockPurchase(player, marketName, amount, plugin.market.get(marketName));
+                    }
                     player.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] Bought " + ChatColor.YELLOW + amount + ChatColor.DARK_PURPLE + " of " + ChatColor.YELLOW + marketName + ChatColor.DARK_PURPLE + " for " + ChatColor.YELLOW + plugin.Method.format(amount * plugin.market.get(marketName)) + ChatColor.DARK_PURPLE + "!");
                 }
             }
@@ -143,10 +162,16 @@ public class SEMarketHandler {
                 } else if (amount.equals(plugin.stockOwnership.get(player.getName() + "_" + marketName))) {
                     plugin.stockOwnership.remove(player.getName() + "_" + marketName);
                     plugin.Method.getAccount(player.getName()).add(amount * plugin.market.get(marketName));
+                    for (StockExchangeListener m : plugin.listeners) {
+                        m.onStockSale(player, marketName, amount, plugin.market.get(marketName));
+                    }
                     player.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] You sold " + ChatColor.YELLOW + amount + ChatColor.DARK_PURPLE + " of " + ChatColor.YELLOW + marketName + ChatColor.DARK_PURPLE + " stock for " + ChatColor.YELLOW + plugin.Method.format(amount * plugin.market.get(marketName)) + ChatColor.DARK_PURPLE + ".");
                 } else {
                     plugin.stockOwnership.put(player.getName() + "_" + marketName, plugin.stockOwnership.get(player.getName() + "_" + marketName) - amount);
                     plugin.Method.getAccount(player.getName()).add(amount * plugin.market.get(marketName));
+                    for (StockExchangeListener m : plugin.listeners) {
+                        m.onStockSale(player, marketName, amount, plugin.market.get(marketName));
+                    }
                     player.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] You sold " + ChatColor.YELLOW + amount + ChatColor.DARK_PURPLE + " of " + ChatColor.YELLOW + marketName + ChatColor.DARK_PURPLE + " stock for " + ChatColor.YELLOW + plugin.Method.format(amount * plugin.market.get(marketName)) + ChatColor.DARK_PURPLE + ".");
                 }
             }
@@ -163,6 +188,9 @@ public class SEMarketHandler {
                 Integer amount = plugin.stockOwnership.get(player.getName() + "_" + marketName);
                 plugin.stockOwnership.remove(player.getName() + "_" + marketName);
                 plugin.Method.getAccount(player.getName()).add(amount * plugin.market.get(marketName));
+                for (StockExchangeListener m : plugin.listeners) {
+                    m.onStockSale(player, marketName, amount, plugin.market.get(marketName));
+                }
                 player.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] You sold " + ChatColor.YELLOW + amount + ChatColor.DARK_PURPLE + " of " + ChatColor.YELLOW + marketName + ChatColor.DARK_PURPLE + " stock for " + ChatColor.YELLOW + plugin.Method.format(amount * plugin.market.get(marketName)) + ChatColor.DARK_PURPLE + ".");
             }
         }
@@ -173,6 +201,9 @@ public class SEMarketHandler {
             sender.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] That stock doesn't exist!");
         } else {
             plugin.market.put(marketName, plugin.market.get(marketName) + amount);
+            for (StockExchangeListener m : plugin.listeners) {
+                m.onStockIncrease(marketName, amount);
+            }
             sender.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] Added " + ChatColor.YELLOW + plugin.Method.format(amount) + ChatColor.DARK_PURPLE + " to the " + ChatColor.YELLOW + marketName + ChatColor.DARK_PURPLE + " stock price.");
             lookup(sender, marketName);
         }
@@ -186,6 +217,9 @@ public class SEMarketHandler {
                 sender.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] You can't send a stock into negatives!");
             } else {
                 plugin.market.put(marketName, plugin.market.get(marketName) - amount);
+                for (StockExchangeListener m : plugin.listeners) {
+                    m.onStockDecrease(marketName, amount);
+                }
                 sender.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] Removed " + ChatColor.YELLOW + plugin.Method.format(amount) + ChatColor.DARK_PURPLE + " from the " + ChatColor.YELLOW + marketName + ChatColor.DARK_PURPLE + " stock price.");
                 lookup(sender, marketName);
             }
@@ -223,6 +257,10 @@ public class SEMarketHandler {
             config.file.setProperty("stocks.limits." + marketName, limit);
             config.file.save();
             config.configStocks();
+            
+            for (StockExchangeListener m : plugin.listeners) {
+                m.onStockLimitChange(marketName, limit);
+            }
             event.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] Successfully changed the limit of " + ChatColor.YELLOW + marketName + ChatColor.DARK_PURPLE + " to " + ChatColor.YELLOW + limit + ChatColor.DARK_PURPLE + ".");
         }
     }

@@ -9,6 +9,8 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.Plugin;
 
 import java.util.HashMap;
+import java.util.Set;
+import java.util.HashSet;
 
 import com.nijikokun.register.payment.Method;
 
@@ -29,17 +31,20 @@ public class StockExchange extends JavaPlugin {
      **/
     
     public static PermissionHandler permissionHandler;
-    private final SEConfig config = new SEConfig(this);
-    private final SEFileHandler fileHandler = new SEFileHandler(this, config);
-    private final SEScheduleHandler scheduleHandler = new SEScheduleHandler(this);
+    protected final SEConfig config = new SEConfig(this);
+    protected final SEFileHandler fileHandler = new SEFileHandler(this, config);
+    protected final SEScheduleHandler scheduleHandler = new SEScheduleHandler(this);
     private final SEMarketHandler marketHandler = new SEMarketHandler(this, config);
     private final SEPluginListener pluginListener = new SEPluginListener(this);
     private final SECommandListener cmdHandler = new SECommandListener(this, marketHandler, scheduleHandler, config, fileHandler);
     private final SEUpdater updater = new SEUpdater(this, config);
+    private final StockExchangeListener listener = new StockExchangeListener(this);
     public Method Method = null;
     
-    HashMap<String, Double> market = new HashMap<String, Double>();
-    HashMap<String, Integer> stockOwnership = new HashMap<String, Integer>();
+    protected static Set<StockExchangeListener> listeners = new HashSet<StockExchangeListener>();
+    
+    static HashMap<String, Double> market = new HashMap<String, Double>();
+    static HashMap<String, Integer> stockOwnership = new HashMap<String, Integer>();
     
     @Override
     public void onDisable() {
@@ -86,4 +91,8 @@ public class StockExchange extends JavaPlugin {
             }
         }
     }  
+    
+    //public static SEScheduleHandler getSchedule() {
+        //return scheduleHandler;
+    //}
 }

@@ -129,29 +129,30 @@ public class SECommandListener {
                 } 
             } else if (args[0].equals("stop")) {
                 if (plugin.permissionHandler != null && plugin.permissionHandler.has(player, "stocks.admin.schedule")) {
-                    if (scheduleHandler.taskId != 0) {
+                    if (scheduleHandler.isFluctuating == true) {
                         Bukkit.getServer().getScheduler().cancelTask(scheduleHandler.taskId);
                         scheduleHandler.taskId = 0;
                         player.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] Stock fluctuations stopped!");
                     }
                 } else if (plugin.permissionHandler == null && player.isOp()) {
-                    if (scheduleHandler.taskId != 0) {
+                    if (scheduleHandler.isFluctuating == true) {
                         Bukkit.getServer().getScheduler().cancelTask(scheduleHandler.taskId);
                         scheduleHandler.taskId = 0;
+                        scheduleHandler.isFluctuating = false;
                         player.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] Stock fluctuations stopped!");
                     }
                 }
             } else if (args[0].equals("start")) {
                 if (plugin.permissionHandler != null && plugin.permissionHandler.has(player, "stocks.admin.schedule")) {
                     if (config.flucsEnabled == true) {
-                        if (scheduleHandler.taskId == 0) {
+                        if (scheduleHandler.isFluctuating == false) {
                             scheduleHandler.fluctuate(config.min, config.max, config.delay, config.broadcast);
                             player.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] Stock fluctuations started!");
                         }
                     }
                 } else if (plugin.permissionHandler == null && player.isOp()) {
                     if (config.flucsEnabled == true) {
-                        if (scheduleHandler.taskId == 0) {
+                        if (scheduleHandler.isFluctuating == false) {
                             scheduleHandler.fluctuate(config.min, config.max, config.delay, config.broadcast);
                             player.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] Stock fluctuations started!");
                         }
@@ -190,14 +191,15 @@ public class SECommandListener {
             } else if (args[0].equals("decrease") && args.length > 2) {
                 marketHandler.decrease(event, args[1], Double.parseDouble(args[2]));
             } else if (args[0].equals("stop")) {
-                if (scheduleHandler.taskId != 0) {
+                if (scheduleHandler.isFluctuating == false) {
                     Bukkit.getServer().getScheduler().cancelTask(scheduleHandler.taskId);
                     scheduleHandler.taskId = 0;
+                    scheduleHandler.isFluctuating = false;
                     event.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] Stock fluctuations stopped!");
                 }
             } else if (args[0].equals("start")) {
                 if (config.flucsEnabled == true) {
-                    if (scheduleHandler.taskId == 0) {
+                    if (scheduleHandler.isFluctuating == false) {
                         scheduleHandler.fluctuate(config.min, config.max, config.delay, config.broadcast);
                         event.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] Stock fluctuations started!");
                     }
