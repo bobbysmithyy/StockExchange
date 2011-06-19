@@ -21,13 +21,10 @@ public class StockExchange extends JavaPlugin {
     
     /**
      * To-do list:
+     * TODO Add help command.
      * TODO Add good/poor economic forecasts.
      * TODO Add bank account linking.
      * TODO Add buy/sales charges.
-     * TODO Add refund on /remove
-     * TODO Add private stocks.
-     * TODO Add gifting stocks.
-     * TODO Make API.
      **/
     
     public static PermissionHandler permissionHandler;

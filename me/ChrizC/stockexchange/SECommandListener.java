@@ -90,9 +90,25 @@ public class SECommandListener {
             } else if (args[0].equals("buy") && args.length > 2) {
                 if (plugin.permissionHandler != null && plugin.permissionHandler.has(player, "stocks.users.trade")) {
                     if (args[2].equals("max")) {
-                        marketHandler.buymax(player, args[1]);
+                        if (config.privateStocks.contains(args[1])) {
+                            if (plugin.permissionHandler.has(player, "stocks.users.private." + args[1])) {
+                                marketHandler.buymax(player, args[1]);
+                            } else {
+                                player.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] You do not have the required permission level to do this.");
+                            }
+                        } else {
+                            marketHandler.buymax(player, args[1]);
+                        }
                     } else {
-                        marketHandler.buy(player, args[1], Integer.parseInt(args[2]));
+                        if (config.privateStocks.contains(args[1])) {
+                            if (plugin.permissionHandler.has(player, "stocks.users.private." + args[1])) {
+                                marketHandler.buy(player, args[1], Integer.parseInt(args[2]));
+                            } else {
+                                player.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] You do not have the required permission level to do this.");
+                            }
+                        } else {
+                            marketHandler.buy(player, args[1], Integer.parseInt(args[2]));
+                        }
                     }
                 } else if (plugin.permissionHandler == null) {
                     if (args[2].equals("max")) {
@@ -168,6 +184,30 @@ public class SECommandListener {
                         marketHandler.limit(event, args[1], Integer.parseInt(args[2]));
                     }
                 }
+            } else if (args[0].equals("giveto") || args[0].equals("gift") || args[0].equals("give")) {
+                if (args.length == 4) {
+                    if (plugin.permissionHandler != null && plugin.permissionHandler.has(player, "stocks.users.gift")) {
+                        marketHandler.gift(player, args[1], args[2], Integer.parseInt(args[3]));
+                    } else if (plugin.permissionHandler == null) {
+                        marketHandler.gift(player, args[1], args[2], Integer.parseInt(args[3]));
+                    }
+                }
+            } else if (args[0].equals("private")) {
+                if (args.length == 2) {
+                    if (plugin.permissionHandler != null && plugin.permissionHandler.has(player, "stocks.admin.private")) {
+                        marketHandler.makePrivate(event, args[1]);
+                    } else if (plugin.permissionHandler == null && player.isOp()) {
+                        marketHandler.makePrivate(event, args[1]);
+                    }
+                }
+            } else if (args[0].equals("public")) {
+                if (args.length == 2) {
+                    if (plugin.permissionHandler != null && plugin.permissionHandler.has(player, "stocks.admin.public")) {
+                        marketHandler.makePublic(event, args[1]);
+                    } else if (plugin.permissionHandler == null && player.isOp()) {
+                        marketHandler.makePublic(event, args[1]);
+                    }
+                }
             }
         }
     }
@@ -191,7 +231,7 @@ public class SECommandListener {
             } else if (args[0].equals("decrease") && args.length > 2) {
                 marketHandler.decrease(event, args[1], Double.parseDouble(args[2]));
             } else if (args[0].equals("stop")) {
-                if (scheduleHandler.isFluctuating == false) {
+                if (scheduleHandler.isFluctuating == true) {
                     Bukkit.getServer().getScheduler().cancelTask(scheduleHandler.taskId);
                     scheduleHandler.taskId = 0;
                     scheduleHandler.isFluctuating = false;
@@ -221,6 +261,14 @@ public class SECommandListener {
             } else if (args[0].equals("limit")) {
                 if (args.length == 3) {
                     marketHandler.limit(event, args[1], Integer.parseInt(args[2]));
+                }
+            } else if (args[0].equals("private")) {
+                if (args.length == 2) {
+                    marketHandler.makePrivate(event, args[1]);
+                }
+            } else if (args[0].equals("public")) {
+                if (args.length == 2) {
+                    marketHandler.makePublic(event, args[1]);
                 }
             }
         }

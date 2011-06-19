@@ -52,6 +52,9 @@ public class StockExchangeHandler {
     }
     
     //Get all stocks.
-    public HashMap<String, Double> getStocks() {return plugin.market; }
+    public HashMap<String, Double> getStocks() { return plugin.market; }
+    
+    //Is stock private?
+    public boolean isPrivate(String marketName) { return config.privateStocks.contains(marketName); }
     
 }

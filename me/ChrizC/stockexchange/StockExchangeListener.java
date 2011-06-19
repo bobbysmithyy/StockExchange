@@ -21,5 +21,9 @@ public class StockExchangeListener {
     public void onStockLimitChange(String marketName, int newLimit) {}
     public void onPluginRollback(int number) {}
     public void onPluginUndo() {}
+    public void onPlayerGifting(Player player, String receiver, String marketName, int amount) {}
+    public void onPlayerRefund(String playerName, String marketName, int amount, double price) {}
+    public void onStockPrivate(String marketName) {}
+    public void onStockPublic(String marketName) {}
     
 }
