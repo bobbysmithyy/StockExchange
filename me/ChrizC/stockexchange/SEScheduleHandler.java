@@ -16,6 +16,8 @@ public class SEScheduleHandler {
     Double minimum;
     Boolean broadcasting;
     
+    Boolean isFluctuating;
+    
     public SEScheduleHandler (StockExchange instance) {
         plugin = instance;
     }
@@ -23,10 +25,11 @@ public class SEScheduleHandler {
     public void fluctuate(Double min, Double max, int delay, Boolean broadcast) {
         maximum = max;
         minimum = min;
+        isFluctuating = true;
         broadcasting = broadcast;
         taskId = Bukkit.getServer().getScheduler().scheduleAsyncRepeatingTask(plugin, new Runnable() {
             public void run() {
-                size = plugin.market.size();
+                size = StockExchange.market.size();
                 if (size != 0) {
                     Random random = new Random();
                     int randomInt = random.nextInt(size);
@@ -39,6 +42,9 @@ public class SEScheduleHandler {
                         if (i == randomInt) {
                             if (negOrPos == 1) {
                                 plugin.market.put(s, plugin.market.get(s) + randomFluc);
+                                for (StockExchangeListener m : plugin.listeners) {
+                                    m.onStockFluctuate(s, randomFluc, negOrPos);
+                                }
                                 if (broadcasting == true) {
                                     Bukkit.getServer().broadcastMessage(ChatColor.DARK_PURPLE + "[Stocks] The " + ChatColor.YELLOW + s + ChatColor.DARK_PURPLE + " stock has risen by " + ChatColor.YELLOW + plugin.Method.format(randomFluc));
                                 }
@@ -46,6 +52,9 @@ public class SEScheduleHandler {
                                 double checker = plugin.market.get(s) - randomFluc;
                                 if (checker >= 0) {
                                     plugin.market.put(s, plugin.market.get(s) - randomFluc);
+                                    for (StockExchangeListener m : plugin.listeners) {
+                                        m.onStockFluctuate(s, randomFluc, negOrPos);
+                                    }
                                     if (broadcasting == true) {
                                         Bukkit.getServer().broadcastMessage(ChatColor.DARK_PURPLE + "[Stocks] The " + ChatColor.YELLOW + s + ChatColor.DARK_PURPLE + " stock has fallen by " + ChatColor.YELLOW + plugin.Method.format(randomFluc));
                                     }

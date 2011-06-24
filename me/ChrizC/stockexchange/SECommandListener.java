@@ -18,17 +18,19 @@ public class SECommandListener {
     SEScheduleHandler scheduleHandler;
     SEConfig config;
     SEFileHandler fileHandler;
+    SEHelper helper;
     
     Player player;
     
     List list = new ArrayList();
     
-    public SECommandListener(StockExchange instance, SEMarketHandler marketHandler, SEScheduleHandler scheduleHandler, SEConfig config, SEFileHandler fileHandler) {
+    public SECommandListener(StockExchange instance, SEMarketHandler marketHandler, SEScheduleHandler scheduleHandler, SEConfig config, SEFileHandler fileHandler, SEHelper helper) {
         plugin = instance;
         this.marketHandler = marketHandler;
         this.scheduleHandler = scheduleHandler;
         this.config = config;
         this.fileHandler = fileHandler;
+        this.helper = helper;
     }
     
     public void setupCommands() {
@@ -90,9 +92,25 @@ public class SECommandListener {
             } else if (args[0].equals("buy") && args.length > 2) {
                 if (plugin.permissionHandler != null && plugin.permissionHandler.has(player, "stocks.users.trade")) {
                     if (args[2].equals("max")) {
-                        marketHandler.buymax(player, args[1]);
+                        if (config.privateStocks.contains(args[1])) {
+                            if (plugin.permissionHandler.has(player, "stocks.users.private." + args[1])) {
+                                marketHandler.buymax(player, args[1]);
+                            } else {
+                                player.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] You do not have the required permission level to do this.");
+                            }
+                        } else {
+                            marketHandler.buymax(player, args[1]);
+                        }
                     } else {
-                        marketHandler.buy(player, args[1], Integer.parseInt(args[2]));
+                        if (config.privateStocks.contains(args[1])) {
+                            if (plugin.permissionHandler.has(player, "stocks.users.private." + args[1])) {
+                                marketHandler.buy(player, args[1], Integer.parseInt(args[2]));
+                            } else {
+                                player.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] You do not have the required permission level to do this.");
+                            }
+                        } else {
+                            marketHandler.buy(player, args[1], Integer.parseInt(args[2]));
+                        }
                     }
                 } else if (plugin.permissionHandler == null) {
                     if (args[2].equals("max")) {
@@ -129,29 +147,30 @@ public class SECommandListener {
                 } 
             } else if (args[0].equals("stop")) {
                 if (plugin.permissionHandler != null && plugin.permissionHandler.has(player, "stocks.admin.schedule")) {
-                    if (scheduleHandler.taskId != 0) {
+                    if (scheduleHandler.isFluctuating == true) {
                         Bukkit.getServer().getScheduler().cancelTask(scheduleHandler.taskId);
                         scheduleHandler.taskId = 0;
                         player.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] Stock fluctuations stopped!");
                     }
                 } else if (plugin.permissionHandler == null && player.isOp()) {
-                    if (scheduleHandler.taskId != 0) {
+                    if (scheduleHandler.isFluctuating == true) {
                         Bukkit.getServer().getScheduler().cancelTask(scheduleHandler.taskId);
                         scheduleHandler.taskId = 0;
+                        scheduleHandler.isFluctuating = false;
                         player.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] Stock fluctuations stopped!");
                     }
                 }
             } else if (args[0].equals("start")) {
                 if (plugin.permissionHandler != null && plugin.permissionHandler.has(player, "stocks.admin.schedule")) {
                     if (config.flucsEnabled == true) {
-                        if (scheduleHandler.taskId == 0) {
+                        if (scheduleHandler.isFluctuating == false) {
                             scheduleHandler.fluctuate(config.min, config.max, config.delay, config.broadcast);
                             player.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] Stock fluctuations started!");
                         }
                     }
                 } else if (plugin.permissionHandler == null && player.isOp()) {
                     if (config.flucsEnabled == true) {
-                        if (scheduleHandler.taskId == 0) {
+                        if (scheduleHandler.isFluctuating == false) {
                             scheduleHandler.fluctuate(config.min, config.max, config.delay, config.broadcast);
                             player.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] Stock fluctuations started!");
                         }
@@ -165,6 +184,46 @@ public class SECommandListener {
                         marketHandler.limit(event, args[1], Integer.parseInt(args[2]));
                     } else if (plugin.permissionHandler == null && player.isOp()) {
                         marketHandler.limit(event, args[1], Integer.parseInt(args[2]));
+                    }
+                }
+            } else if (args[0].equals("giveto") || args[0].equals("gift") || args[0].equals("give")) {
+                if (args.length == 4) {
+                    if (plugin.permissionHandler != null && plugin.permissionHandler.has(player, "stocks.users.gift")) {
+                        marketHandler.gift(player, args[1], args[2], Integer.parseInt(args[3]));
+                    } else if (plugin.permissionHandler == null) {
+                        marketHandler.gift(player, args[1], args[2], Integer.parseInt(args[3]));
+                    }
+                }
+            } else if (args[0].equals("private")) {
+                if (args.length == 2) {
+                    if (plugin.permissionHandler != null && plugin.permissionHandler.has(player, "stocks.admin.private")) {
+                        marketHandler.makePrivate(event, args[1]);
+                    } else if (plugin.permissionHandler == null && player.isOp()) {
+                        marketHandler.makePrivate(event, args[1]);
+                    }
+                }
+            } else if (args[0].equals("public")) {
+                if (args.length == 2) {
+                    if (plugin.permissionHandler != null && plugin.permissionHandler.has(player, "stocks.admin.public")) {
+                        marketHandler.makePublic(event, args[1]);
+                    } else if (plugin.permissionHandler == null && player.isOp()) {
+                        marketHandler.makePublic(event, args[1]);
+                    }
+                }
+            } else if (args[0].equals("help")) {
+                if (args.length == 1) {
+                    helper.helpMe(event, "user");
+                } else if (args.length == 2) {
+                    if (args[1].equals("admin")) {
+                        helper.helpMe(event, "admin");
+                    }
+                }
+            } else if (args[0].equals("?")) {
+                if (args.length == 1) {
+                    helper.helpMe(event, "user");
+                } else if (args.length == 2) {
+                    if (args[1].equals("admin")) {
+                        helper.helpMe(event, "admin");
                     }
                 }
             }
@@ -190,14 +249,15 @@ public class SECommandListener {
             } else if (args[0].equals("decrease") && args.length > 2) {
                 marketHandler.decrease(event, args[1], Double.parseDouble(args[2]));
             } else if (args[0].equals("stop")) {
-                if (scheduleHandler.taskId != 0) {
+                if (scheduleHandler.isFluctuating == true) {
                     Bukkit.getServer().getScheduler().cancelTask(scheduleHandler.taskId);
                     scheduleHandler.taskId = 0;
+                    scheduleHandler.isFluctuating = false;
                     event.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] Stock fluctuations stopped!");
                 }
             } else if (args[0].equals("start")) {
                 if (config.flucsEnabled == true) {
-                    if (scheduleHandler.taskId == 0) {
+                    if (scheduleHandler.isFluctuating == false) {
                         scheduleHandler.fluctuate(config.min, config.max, config.delay, config.broadcast);
                         event.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] Stock fluctuations started!");
                     }
@@ -220,6 +280,16 @@ public class SECommandListener {
                 if (args.length == 3) {
                     marketHandler.limit(event, args[1], Integer.parseInt(args[2]));
                 }
+            } else if (args[0].equals("private")) {
+                if (args.length == 2) {
+                    marketHandler.makePrivate(event, args[1]);
+                }
+            } else if (args[0].equals("public")) {
+                if (args.length == 2) {
+                    marketHandler.makePublic(event, args[1]);
+                }
+            } else if (args[0].equals("help")) {
+                helper.consoleHelpMe(event);
             }
         }
     }

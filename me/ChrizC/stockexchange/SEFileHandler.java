@@ -227,6 +227,10 @@ public class SEFileHandler {
                 
                     plugin.stockOwnership = new HashMap((HashMap)ois.readObject());
                     plugin.market = new HashMap((HashMap)ois2.readObject());
+                    
+                    for (StockExchangeListener m : plugin.listeners) {
+                        m.onPluginRollback(num);
+                    }
 
                     ois.close();
                     ois2.close();
@@ -249,6 +253,10 @@ public class SEFileHandler {
                 
                     plugin.stockOwnership = new HashMap((HashMap)ois.readObject());
                     plugin.market = new HashMap((HashMap)ois2.readObject());
+                    
+                    for (StockExchangeListener m : plugin.listeners) {
+                        m.onPluginRollback(num);
+                    }
 
                     ois.close();
                     ois2.close();
@@ -275,6 +283,10 @@ public class SEFileHandler {
                 
             plugin.stockOwnership = new HashMap((HashMap)ois.readObject());
             plugin.market = new HashMap((HashMap)ois2.readObject());
+            
+            for (StockExchangeListener m : plugin.listeners) {
+                m.onPluginUndo();
+            }
 
             ois.close();
             ois2.close();
