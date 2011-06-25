@@ -18,17 +18,19 @@ public class SECommandListener {
     SEScheduleHandler scheduleHandler;
     SEConfig config;
     SEFileHandler fileHandler;
+    SEHelper helper;
     
     Player player;
     
     List list = new ArrayList();
     
-    public SECommandListener(StockExchange instance, SEMarketHandler marketHandler, SEScheduleHandler scheduleHandler, SEConfig config, SEFileHandler fileHandler) {
+    public SECommandListener(StockExchange instance, SEMarketHandler marketHandler, SEScheduleHandler scheduleHandler, SEConfig config, SEFileHandler fileHandler, SEHelper helper) {
         plugin = instance;
         this.marketHandler = marketHandler;
         this.scheduleHandler = scheduleHandler;
         this.config = config;
         this.fileHandler = fileHandler;
+        this.helper = helper;
     }
     
     public void setupCommands() {
@@ -208,6 +210,22 @@ public class SECommandListener {
                         marketHandler.makePublic(event, args[1]);
                     }
                 }
+            } else if (args[0].equals("help")) {
+                if (args.length == 1) {
+                    helper.helpMe(event, "user");
+                } else if (args.length == 2) {
+                    if (args[1].equals("admin")) {
+                        helper.helpMe(event, "admin");
+                    }
+                }
+            } else if (args[0].equals("?")) {
+                if (args.length == 1) {
+                    helper.helpMe(event, "user");
+                } else if (args.length == 2) {
+                    if (args[1].equals("admin")) {
+                        helper.helpMe(event, "admin");
+                    }
+                }
             }
         }
     }
@@ -270,6 +288,8 @@ public class SECommandListener {
                 if (args.length == 2) {
                     marketHandler.makePublic(event, args[1]);
                 }
+            } else if (args[0].equals("help")) {
+                helper.consoleHelpMe(event);
             }
         }
     }

@@ -21,7 +21,6 @@ public class StockExchange extends JavaPlugin {
     
     /**
      * To-do list:
-     * TODO Add help command.
      * TODO Add good/poor economic forecasts.
      * TODO Add bank account linking.
      * TODO Add buy/sales charges.
@@ -31,9 +30,10 @@ public class StockExchange extends JavaPlugin {
     protected final SEConfig config = new SEConfig(this);
     protected final SEFileHandler fileHandler = new SEFileHandler(this, config);
     protected final SEScheduleHandler scheduleHandler = new SEScheduleHandler(this);
+    private final SEHelper helper = new SEHelper(this);
     private final SEMarketHandler marketHandler = new SEMarketHandler(this, config);
     private final SEPluginListener pluginListener = new SEPluginListener(this);
-    private final SECommandListener cmdHandler = new SECommandListener(this, marketHandler, scheduleHandler, config, fileHandler);
+    private final SECommandListener cmdHandler = new SECommandListener(this, marketHandler, scheduleHandler, config, fileHandler, helper);
     private final SEUpdater updater = new SEUpdater(this, config);
     private final StockExchangeListener listener = new StockExchangeListener(this);
     public Method Method = null;

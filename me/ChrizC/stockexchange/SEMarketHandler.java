@@ -173,12 +173,15 @@ public class SEMarketHandler {
         } else {
             Double calc = plugin.Method.getAccount(player.getName()).balance() / plugin.market.get(marketName);
             int amount = (int)Math.floor(calc);
+            System.out.println(amount);
             if (plugin.Method.getAccount(player.getName()).hasEnough(amount * plugin.market.get(marketName))) {
                 if (config.checkLimit(marketName) != 0) {
-                    if (plugin.stockOwnership.get(player.getName() + "_" + marketName) == null) {
-                        amount = config.checkLimit(marketName);
-                    } else if ((amount + plugin.stockOwnership.get(player.getName() + "_" + marketName)) > config.checkLimit(marketName)) {
-                        amount = config.checkLimit(marketName) - plugin.stockOwnership.get(player.getName() + "_" + marketName);
+                    if (amount > config.checkLimit(marketName)) {
+                        if (plugin.stockOwnership.get(player.getName() + "_" + marketName) == null) {
+                            amount = config.checkLimit(marketName);
+                        } else if ((amount + plugin.stockOwnership.get(player.getName() + "_" + marketName)) > config.checkLimit(marketName)) {
+                            amount = config.checkLimit(marketName) - plugin.stockOwnership.get(player.getName() + "_" + marketName);
+                        }
                     }
                 }
                 if (plugin.stockOwnership.containsKey(player.getName() + "_" + marketName)) {
