@@ -21,7 +21,6 @@ public class StockExchange extends JavaPlugin {
     
     /**
      * To-do list:
-     * TODO Add help command.
      * TODO Add good/poor economic forecasts.
      * TODO Add bank account linking.
      * TODO Add buy/sales charges.

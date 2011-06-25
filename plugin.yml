@@ -1,6 +1,6 @@
 name: StockExchange
 main: me.ChrizC.stockexchange.StockExchange
-version: 1.6-dev
+version: 1.6
 author: ChrizC
 description: StockExchange allows your users to trade in fictional stocks, making a profit in your in-game economy!
 commands:
@@ -10,3 +10,4 @@ commands:
     aliases:
       - market
       - stock
+website: http://chrizc.co.uk/index.php?url=plugins

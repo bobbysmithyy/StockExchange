@@ -5,6 +5,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 
+import org.bukkit.entity.Player;
+
 import me.ChrizC.stockexchange.exceptions.*;
 
 public class StockExchangeHandler {
@@ -174,6 +176,59 @@ public class StockExchangeHandler {
         config.numOfPrivateStocks = config.privateStocks.size();
         for (StockExchangeListener m : plugin.listeners) {
             m.onStockPublic(marketName);
+        }
+    }
+    
+    public void buyStocks(Player player, String marketName, int amount) throws NonExistantMarketException, OwnershipException {
+        if (!plugin.market.containsKey(marketName)) {
+            throw new NonExistantMarketException("That market does not exist.");
+        }
+        
+        int i;
+        if (plugin.stockOwnership.get(player.getName() + "_" + marketName) == null) {
+            i = 0;
+        } else {
+            i = plugin.stockOwnership.get(player.getName() + "_" + marketName);
+        }
+        int limitCheck = i + amount;
+        if (config.checkLimit(marketName) != 0 && (limitCheck > config.checkLimit(marketName)) == true) {
+            throw new OwnershipException("You can't buy that many stocks.");
+        } else {
+            if (plugin.stockOwnership.containsKey(player.getName() + "_" + marketName)) {
+                plugin.stockOwnership.put(player.getName() + "_" + marketName, plugin.stockOwnership.get(player.getName() + "_" + marketName) + amount);
+                plugin.Method.getAccount(player.getName()).subtract(amount * plugin.market.get(marketName));
+                for (StockExchangeListener m : plugin.listeners) {
+                    m.onStockPurchase(player, marketName, amount, plugin.market.get(marketName));
+                }
+            } else {
+                plugin.stockOwnership.put(player.getName() + "_" + marketName, amount);
+                plugin.Method.getAccount(player.getName()).subtract(amount * plugin.market.get(marketName));
+                for (StockExchangeListener m : plugin.listeners) {
+                    m.onStockPurchase(player, marketName, amount, plugin.market.get(marketName));
+                }
+            }
+        }
+    }
+    
+    public void sellStocks(Player player, String marketName, int amount) throws NonExistantMarketException, OwnershipException {
+        if (!plugin.stockOwnership.containsKey(player.getName() + "_" + marketName)) {
+            throw new OwnershipException("You don't have any stocks to sell.");
+        } else {
+            if (amount > plugin.stockOwnership.get(player.getName() + "_" + marketName)) {
+                throw new OwnershipException("You don't have enough stocks to sell.");
+            } else if (amount == plugin.stockOwnership.get(player.getName() + "_" + marketName)) {
+                plugin.stockOwnership.remove(player.getName() + "_" + marketName);
+                plugin.Method.getAccount(player.getName()).add(amount * plugin.market.get(marketName));
+                for (StockExchangeListener m : plugin.listeners) {
+                    m.onStockSale(player, marketName, amount, plugin.market.get(marketName));
+                }
+            } else {
+                plugin.stockOwnership.put(player.getName() + "_" + marketName, plugin.stockOwnership.get(player.getName() + "_" + marketName) - amount);
+                plugin.Method.getAccount(player.getName()).add(amount * plugin.market.get(marketName));
+                for (StockExchangeListener m : plugin.listeners) {
+                    m.onStockSale(player, marketName, amount, plugin.market.get(marketName));
+                }
+            }
         }
     }
     
