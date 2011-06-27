@@ -12,15 +12,9 @@ public class SEConfig {
     
     Configuration file;
     
-    Boolean flucsEnabled;
-    Boolean broadcast;
     Boolean checkVersion;
     Boolean verbose;
     Boolean refundOnRemoval;
-    
-    Integer delay = 15;
-    Double max = 4D;
-    Double min = 2D;
     
     List<String> stocksLims;
     List<String> privateStocks;
@@ -43,11 +37,6 @@ public class SEConfig {
                 System.out.println("[StockExchange] Configuration file loaded!");
             }
         } else {
-            file.setProperty("naturalFluctuations", true);
-            file.setProperty("fluctuationDelay", 15);
-            file.setProperty("maxFluctuation", 4);
-            file.setProperty("minFluctuation", 2);
-            file.setProperty("broadcastOnFluctuation", false);
             file.setProperty("checkVersion", true);
             file.setProperty("verbose", false);
             file.setProperty("refundOnRemoval", true);
@@ -65,14 +54,8 @@ public class SEConfig {
         file.save();
         
         //Get configs
-        flucsEnabled = file.getBoolean("naturalFluctuations", true);
-        broadcast = file.getBoolean("broadcastOnFluctuation", true);
         checkVersion = file.getBoolean("checkVersion", true);
         refundOnRemoval = file.getBoolean("refundOnRemoval", true);
-        
-        delay = file.getInt("fluctuationDelay", delay);
-        max = file.getDouble("maxFluctuation", max);
-        min = file.getDouble("minFluctuation", min);
     }
     
     public void configStocks() {

@@ -21,19 +21,20 @@ public class StockExchange extends JavaPlugin {
     
     /**
      * To-do list:
+     * TODO Figure out how to work "buying out" markets.
      * TODO Add good/poor economic forecasts.
      * TODO Add bank account linking.
      * TODO Add buy/sales charges.
+     * TODO Remove fluctuations from main plugin - seperate plugin.
      **/
     
     public static PermissionHandler permissionHandler;
     protected final SEConfig config = new SEConfig(this);
     protected final SEFileHandler fileHandler = new SEFileHandler(this, config);
-    protected final SEScheduleHandler scheduleHandler = new SEScheduleHandler(this);
     private final SEHelper helper = new SEHelper(this);
     private final SEMarketHandler marketHandler = new SEMarketHandler(this, config);
     private final SEPluginListener pluginListener = new SEPluginListener(this);
-    private final SECommandListener cmdHandler = new SECommandListener(this, marketHandler, scheduleHandler, config, fileHandler, helper);
+    private final SECommandListener cmdHandler = new SECommandListener(this, marketHandler, config, fileHandler, helper);
     private final SEUpdater updater = new SEUpdater(this, config);
     private final StockExchangeListener listener = new StockExchangeListener(this);
     public Method Method = null;
@@ -45,9 +46,6 @@ public class StockExchange extends JavaPlugin {
     
     @Override
     public void onDisable() {
-        if (scheduleHandler.taskId != 0) {
-            Bukkit.getServer().getScheduler().cancelTask(scheduleHandler.taskId);
-        }
         fileHandler.saveMarket();
         fileHandler.saveOwnership();
         System.out.println("[StockExchange] disabled.");
@@ -65,9 +63,6 @@ public class StockExchange extends JavaPlugin {
         fileHandler.loadMarket();
         fileHandler.loadOwnership();
         config.configStocks();
-        if (config.flucsEnabled == true) {
-            scheduleHandler.fluctuate(config.min, config.max, config.delay, config.broadcast);
-        }
         PluginDescriptionFile pdfFile = this.getDescription();
         System.out.println("[StockExchange] version v" + pdfFile.getVersion() + " is enabled.");
         if (pdfFile.getVersion().contains("dev")) {
@@ -88,8 +83,5 @@ public class StockExchange extends JavaPlugin {
             }
         }
     }  
-    
-    //public static SEScheduleHandler getSchedule() {
-        //return scheduleHandler;
-    //}
+
 }

@@ -11,7 +11,6 @@ public class StockExchangeListener {
         plugin.listeners.add(this);
     }
     
-    public void onStockFluctuate(String marketName, double amount, int negOrPos) {}
     public void onStockDecrease(String marketName, double amount) {}
     public void onStockIncrease(String marketName, double amount) {}
     public void onStockAddition(String marketName, double initialPrice) {}

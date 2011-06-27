@@ -32,12 +32,6 @@ public class SEHelper {
             if (plugin.permissionHandler.has(player, "stocks.admin.modify")) {
                 event.sendMessage(ChatColor.DARK_PURPLE + "/stocks " + ChatColor.LIGHT_PURPLE + "decrease " + ChatColor.DARK_PURPLE + "[" + ChatColor.WHITE + "name" + ChatColor.DARK_PURPLE + "] [" + ChatColor.WHITE + "amount" + ChatColor.DARK_PURPLE + "] " + ChatColor.YELLOW + "Decrease a market's share price.");
             }
-            if (plugin.permissionHandler.has(player, "stocks.admin.schedule")) {
-                event.sendMessage(ChatColor.DARK_PURPLE + "/stocks " + ChatColor.LIGHT_PURPLE + "start " + ChatColor.YELLOW + "Start share price fluctuations.");
-            }
-            if (plugin.permissionHandler.has(player, "stocks.admin.schedule")) {
-                event.sendMessage(ChatColor.DARK_PURPLE + "/stocks " + ChatColor.LIGHT_PURPLE + "stop " + ChatColor.YELLOW + "Stop share price fluctuations.");
-            }
             if (plugin.permissionHandler.has(player, "stocks.admin.limit")) {
                 event.sendMessage(ChatColor.DARK_PURPLE + "/stocks " + ChatColor.LIGHT_PURPLE + "limit " + ChatColor.DARK_PURPLE + "[" + ChatColor.WHITE + "name" + ChatColor.DARK_PURPLE + "] [" + ChatColor.WHITE + "limit" + ChatColor.DARK_PURPLE + "] " + ChatColor.YELLOW + "Change the ownership limit of a");
                 event.sendMessage(ChatColor.YELLOW + "market.");
@@ -80,8 +74,6 @@ public class SEHelper {
         event.sendMessage("stocks remove [name] Remove a market.");
         event.sendMessage("stocks increase [name] [amount] Increase a market's share price.");
         event.sendMessage("stocks decrease [name] [amount] Decrease a market's share price.");
-        event.sendMessage("stocks start Start share price fluctuations.");
-        event.sendMessage("stocks stop Stop share price fluctuations.");
         event.sendMessage("stocks limit [name] [limit] Change the ownership limit of a market.");
         event.sendMessage("stocks private [name] Privatise a market.");
         event.sendMessage("stocks public [name] Publicise a market.");

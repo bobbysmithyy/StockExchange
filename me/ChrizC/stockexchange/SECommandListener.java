@@ -15,7 +15,6 @@ public class SECommandListener {
     
     private final StockExchange plugin;
     SEMarketHandler marketHandler;
-    SEScheduleHandler scheduleHandler;
     SEConfig config;
     SEFileHandler fileHandler;
     SEHelper helper;
@@ -24,10 +23,9 @@ public class SECommandListener {
     
     List list = new ArrayList();
     
-    public SECommandListener(StockExchange instance, SEMarketHandler marketHandler, SEScheduleHandler scheduleHandler, SEConfig config, SEFileHandler fileHandler, SEHelper helper) {
+    public SECommandListener(StockExchange instance, SEMarketHandler marketHandler, SEConfig config, SEFileHandler fileHandler, SEHelper helper) {
         plugin = instance;
         this.marketHandler = marketHandler;
-        this.scheduleHandler = scheduleHandler;
         this.config = config;
         this.fileHandler = fileHandler;
         this.helper = helper;
@@ -145,37 +143,6 @@ public class SECommandListener {
                 } else if (plugin.permissionHandler == null && player.isOp()) {
                     marketHandler.decrease(player, args[1], Double.parseDouble(args[2]));
                 } 
-            } else if (args[0].equals("stop")) {
-                if (plugin.permissionHandler != null && plugin.permissionHandler.has(player, "stocks.admin.schedule")) {
-                    if (scheduleHandler.isFluctuating == true) {
-                        Bukkit.getServer().getScheduler().cancelTask(scheduleHandler.taskId);
-                        scheduleHandler.taskId = 0;
-                        player.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] Stock fluctuations stopped!");
-                    }
-                } else if (plugin.permissionHandler == null && player.isOp()) {
-                    if (scheduleHandler.isFluctuating == true) {
-                        Bukkit.getServer().getScheduler().cancelTask(scheduleHandler.taskId);
-                        scheduleHandler.taskId = 0;
-                        scheduleHandler.isFluctuating = false;
-                        player.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] Stock fluctuations stopped!");
-                    }
-                }
-            } else if (args[0].equals("start")) {
-                if (plugin.permissionHandler != null && plugin.permissionHandler.has(player, "stocks.admin.schedule")) {
-                    if (config.flucsEnabled == true) {
-                        if (scheduleHandler.isFluctuating == false) {
-                            scheduleHandler.fluctuate(config.min, config.max, config.delay, config.broadcast);
-                            player.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] Stock fluctuations started!");
-                        }
-                    }
-                } else if (plugin.permissionHandler == null && player.isOp()) {
-                    if (config.flucsEnabled == true) {
-                        if (scheduleHandler.isFluctuating == false) {
-                            scheduleHandler.fluctuate(config.min, config.max, config.delay, config.broadcast);
-                            player.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] Stock fluctuations started!");
-                        }
-                    }
-                }
             } else if (args[0].equals("portfolio") || args[0].equals("showmine")) {
                 marketHandler.portfolio(player);
             } else if (args[0].equals("limit")) {
@@ -248,20 +215,6 @@ public class SECommandListener {
                 marketHandler.increase(event, args[1], Double.parseDouble(args[2]));
             } else if (args[0].equals("decrease") && args.length > 2) {
                 marketHandler.decrease(event, args[1], Double.parseDouble(args[2]));
-            } else if (args[0].equals("stop")) {
-                if (scheduleHandler.isFluctuating == true) {
-                    Bukkit.getServer().getScheduler().cancelTask(scheduleHandler.taskId);
-                    scheduleHandler.taskId = 0;
-                    scheduleHandler.isFluctuating = false;
-                    event.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] Stock fluctuations stopped!");
-                }
-            } else if (args[0].equals("start")) {
-                if (config.flucsEnabled == true) {
-                    if (scheduleHandler.isFluctuating == false) {
-                        scheduleHandler.fluctuate(config.min, config.max, config.delay, config.broadcast);
-                        event.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] Stock fluctuations started!");
-                    }
-                }
             } else if (args[0].equals("rollback")) {
                 if (args.length == 2) {
                     if (fileHandler.rollback(Integer.parseInt(args[1])) == true) {

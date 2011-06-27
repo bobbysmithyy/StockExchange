@@ -12,28 +12,14 @@ import me.ChrizC.stockexchange.exceptions.*;
 public class StockExchangeHandler {
     
     StockExchange plugin;
-    SEScheduleHandler schedule;
     SEConfig config;
     SEFileHandler fileHandle;
     
     public StockExchangeHandler(StockExchange instance) {
         plugin = instance;
-        schedule = plugin.scheduleHandler;
         config = plugin.config;
         fileHandle = plugin.fileHandler;
     }
-    
-    //Check if fluctuations are happening.
-    public boolean isFluctating() { return schedule.isFluctuating; }
-    
-    //Do we broadcast?
-    public boolean broadcastOnFluctuate() { return schedule.broadcasting; }
-    
-    //What's the maximum fluctuation?
-    public double getMaxFluctuation() { return schedule.maximum; }
-    
-    //What's the minimum fluctuation?
-    public double getMinFluctuation() { return schedule.minimum; }
     
     //What's the stock ownership limit?
     public int getStockLimit(String marketName) { return config.checkLimit(marketName); }
