@@ -36,7 +36,6 @@ public class StockExchange extends JavaPlugin {
     private final SEPluginListener pluginListener = new SEPluginListener(this);
     private final SECommandListener cmdHandler = new SECommandListener(this, marketHandler, config, fileHandler, helper);
     private final SEUpdater updater = new SEUpdater(this, config);
-    private final StockExchangeListener listener = new StockExchangeListener(this);
     public Method Method = null;
     
     protected static Set<StockExchangeListener> listeners = new HashSet<StockExchangeListener>();

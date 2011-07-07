@@ -1,13 +1,14 @@
 package me.ChrizC.stockexchange;
 
 import org.bukkit.entity.Player;
+import org.bukkit.Bukkit;
 
 public class StockExchangeListener {
     
     protected StockExchange plugin;
     
-    public StockExchangeListener(StockExchange instance) {
-        plugin = instance;
+    public StockExchangeListener() {
+        plugin = (StockExchange) Bukkit.getServer().getPluginManager().getPlugin("StockExchange");
         plugin.listeners.add(this);
     }
     
