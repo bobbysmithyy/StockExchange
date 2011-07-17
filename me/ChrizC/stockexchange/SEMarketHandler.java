@@ -390,4 +390,24 @@ public class SEMarketHandler {
         }
     }
     
+    public void list(CommandSender sender, int length) {
+        TreeSet tree = new TreeSet(plugin.market.keySet());
+        int len;
+        String s;
+        if (length > tree.size()) {
+            len = tree.size();
+        } else {
+            len = length;
+        }
+        
+        sender.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] Stock Market list:");
+        
+        for (int i = 0; i < len; i++) {
+            s = (String) tree.pollFirst();
+            if (!config.privateStocks.contains(s)) {
+                sender.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] " + ChatColor.YELLOW + s + ChatColor.DARK_PURPLE + " at " + ChatColor.YELLOW + plugin.Method.format(plugin.market.get(s)));
+            }
+        }
+    }
+    
 }

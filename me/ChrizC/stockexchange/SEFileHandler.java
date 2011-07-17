@@ -7,192 +7,188 @@ import java.io.FileInputStream;
 import java.io.ObjectInputStream;
 import java.io.IOException;
 
-import java.util.HashMap;
+import org.bukkit.util.config.Configuration;
 
+import java.util.HashMap;
+import java.util.Iterator;
 
 public class SEFileHandler {
     
     private final StockExchange plugin;
     SEConfig config;
+    String string;
     
     File file;
-    File backup;
-    File backup2;
+    Configuration configFile;
     
     public SEFileHandler(StockExchange instance, SEConfig config) {
         plugin = instance;
         this.config = config;
     }
     
-    public void backup(String type) {
-        new File(plugin.getDataFolder(), "backups").mkdir();
-        if (type.equals("market")) {
-            file = new File(plugin.getDataFolder(), "market.dat");
-            backup = new File(plugin.getDataFolder(), "backups/market.bak");
-            backup2 = new File(plugin.getDataFolder(), "backups/market2.bak");
-            if (backup.exists()) {
-            try {
-                if (!backup2.exists()) {
-                    backup2.createNewFile();
-                }
-                FileOutputStream fout = new FileOutputStream(backup2);
-                ObjectOutputStream oout = new ObjectOutputStream(fout);
-                FileInputStream fin = new FileInputStream(backup);
-                ObjectInputStream oin = new ObjectInputStream(fin);
-                
-                oout.writeObject((HashMap)oin.readObject());
-            } catch (IOException e) {
-                System.err.println("[StockExchange] Market.dat backup #1 to backup #2 copy failed: " + e.getMessage());
-            } catch (ClassNotFoundException e1) {
-                System.err.println("[StockExchange] Market.dat backup #1 to backup #2 copy failed: " + e1.getMessage());
-            }
-            }
-            
-            try {
-                if (!backup.exists()) {
-                    backup.createNewFile();
-                }
-                FileOutputStream fout = new FileOutputStream(backup);
-                ObjectOutputStream oout = new ObjectOutputStream(fout);
-                FileInputStream fin = new FileInputStream(file);
-                ObjectInputStream oin = new ObjectInputStream(fin);
-                
-                oout.writeObject((HashMap)oin.readObject());
-            } catch (IOException e) {
-                System.err.println("[StockExchange] Market.dat file to backup #1 copy failed: " + e.getMessage());
-            } catch (ClassNotFoundException e1) {
-                System.err.println("[StockExchange] Market.dat file to backup #1 copy failed: " + e1.getMessage());
-            }
-        } else if (type.equals("ownership")) {
-            file = new File(plugin.getDataFolder(), "ownership.dat");
-            backup = new File(plugin.getDataFolder(), "backups/ownership.bak");
-            backup2 = new File(plugin.getDataFolder(), "backups/ownership2.bak");
-            if (backup.exists()) {
-                try {
-                    if (!backup2.exists()) {
-                        backup2.createNewFile();
-                    }
-                    FileOutputStream fout = new FileOutputStream(backup2);
-                    ObjectOutputStream oout = new ObjectOutputStream(fout);
-                    FileInputStream fin = new FileInputStream(backup);
-                    ObjectInputStream oin = new ObjectInputStream(fin);
-                
-                    oout.writeObject((HashMap)oin.readObject());
-                } catch (IOException e) {
-                    System.err.println("[StockExchange] Ownership.dat backup #1 to backup #2 copy failed: " + e.getMessage());
-                } catch (ClassNotFoundException e1) {
-                    System.err.println("[StockExchange] Ownership.dat backup #1 to backup #2 copy failed: " + e1.getMessage());
-                }
-            }
-            
-            try {
-                if (!backup.exists()) {
-                    backup.createNewFile();
-                }
-                FileOutputStream fout = new FileOutputStream(backup);
-                ObjectOutputStream oout = new ObjectOutputStream(fout);
-                FileInputStream fin = new FileInputStream(file);
-                ObjectInputStream oin = new ObjectInputStream(fin);
-                
-                oout.writeObject((HashMap)oin.readObject());
-            } catch (IOException e) {
-                System.err.println("[StockExchange] Ownership.dat file to backup #1 copy failed: " + e.getMessage());
-            } catch (ClassNotFoundException e1) {
-                System.err.println("[StockExchange] Ownership.dat file to backup #1 copy failed: " + e1.getMessage());
-            }
-        }
-    }
+    
     
     public void saveMarket() {
-        file = new File(plugin.getDataFolder(),"market.dat");
-        this.backup("market");
-        if (plugin.market != null) {
-            try {
-                FileOutputStream fos = new FileOutputStream(file);
-                ObjectOutputStream oos = new ObjectOutputStream(fos);
-                   
-                oos.writeObject(plugin.market);
-                
-                if (config.verbose == true) {
-                    System.out.println("[StockExchange] Market data saved to file successfully.");
-                }
+        if (config.fileTypes.contains("DAT")) {
+        file = new File(plugin.getDataFolder(), "market.dat");
+            //backupHandler.backup("market");
+            if (plugin.market != null) {
+                try {
+                    FileOutputStream fos = new FileOutputStream(file);
+                    ObjectOutputStream oos = new ObjectOutputStream(fos);
 
-                oos.close();
-            } catch (IOException e) {
-                System.err.println("[StockExchange] Error! Unable to save market data to file: " + e.getMessage());
+                    oos.writeObject(plugin.market);
+
+                    if (config.verbose == true) {
+                        System.out.println("[StockExchange] Market data saved to file successfully. (DAT)");
+                    }
+
+                    oos.close();
+                } catch (IOException e) {
+                    System.err.println("[StockExchange] Error! Unable to save market data to file: " + e.getMessage());
+                }
+            }
+        }
+        
+        if (config.fileTypes.contains("YML")) {
+            configFile = new Configuration(new File(plugin.getDataFolder(), "market.yml"));
+            configFile.load();
+            if (plugin.market.size() > 0) {
+                Iterator<String> i = plugin.market.keySet().iterator();
+                while (i.hasNext()) {
+                    String val1 = i.next();
+                    Double val2 = plugin.market.get(val1);
+                    configFile.setProperty("market." + val1, val2);
+                }
+                configFile.save();
+                if (config.verbose == true) {
+                    System.out.println("[StockExchange] Market data saved to file successfully. (YML)");
+                }
             }
         }
     }
     
     public void loadMarket() {
-        file = new File(plugin.getDataFolder(),"market.dat");
-        try {
-            if (!file.exists()) {
-                plugin.getDataFolder().mkdir();
-                file.createNewFile();
-                System.out.println("[StockExchange] Created market.dat data file successfully.");
-            } else {
-                FileInputStream fis = new FileInputStream(file);
-                ObjectInputStream ois = new ObjectInputStream(fis);
-                
-                plugin.market = new HashMap((HashMap)ois.readObject());
+        if (config.loadType.equalsIgnoreCase("DAT")) {
+            file = new File(plugin.getDataFolder(),"market.dat");
+            try {
+                if (!file.exists()) {
+                    plugin.getDataFolder().mkdir();
+                    file.createNewFile();
+                    System.out.println("[StockExchange] Created market.dat data file successfully.");
+                } else {
+                    FileInputStream fis = new FileInputStream(file);
+                    ObjectInputStream ois = new ObjectInputStream(fis);
+
+                    plugin.market = new HashMap((HashMap)ois.readObject());
+
+                    if (config.verbose == true) {
+                        System.out.println("[StockExchange] Loaded market data successfully. (DAT)");
+                    }
+
+                    ois.close();
+                }
+            } catch (IOException e) {
+                System.err.println("[StockExchange] Error! Unable to load market data: " + e.getMessage());
+            } catch (ClassNotFoundException e) {
+                System.err.println("[StockExchange] Error! Unable to load market data: " + e.getMessage());
+            }
+        } else if (config.loadType.equalsIgnoreCase("YML")) {
+            file = new File(plugin.getDataFolder(), "market.yml");
+            configFile = new Configuration(file);
+            configFile.load();
+            if (file.exists()) {
+                Iterator<String> i = configFile.getKeys("market").iterator();
+                while (i.hasNext()) {
+                    String s = i.next();
+                    plugin.market.put(s, configFile.getDouble("market." + s, 1.00));
+                }
                 
                 if (config.verbose == true) {
-                    System.out.println("[StockExchange] Loaded market data successfully.");
+                    System.out.println("[StockExchange] Loaded market data successfully. (YML)");
                 }
-
-                ois.close();
+                
             }
-        } catch (IOException e) {
-            System.err.println("[StockExchange] Error! Unable to load market data: " + e.getMessage());
-        } catch (ClassNotFoundException e) {
-            System.err.println("[StockExchange] Error! Unable to load market data: " + e.getMessage());
         }
     }
     
     public void saveOwnership() {
-        file = new File(plugin.getDataFolder(),"ownership.dat");
-        this.backup("ownership");
-        if (plugin.market != null) {
-            try {
-                FileOutputStream fos = new FileOutputStream(file);
-                ObjectOutputStream oos = new ObjectOutputStream(fos);
-                   
-                oos.writeObject(plugin.stockOwnership);
-                
-                if (config.verbose == true) {
-                    System.out.println("[StockExchange] Ownership data saved to file successfully.");
-                }
+        if (config.fileTypes.contains("DAT")) {
+            file = new File(plugin.getDataFolder(),"ownership.dat");
+            //backupHandler.backup("ownership");
+            if (plugin.market != null) {
+                try {
+                    FileOutputStream fos = new FileOutputStream(file);
+                    ObjectOutputStream oos = new ObjectOutputStream(fos);
 
-                oos.close();
-            } catch (IOException e) {
-                System.err.println("[StockExchange] Error! Unable to save ownership data to file: " + e.getMessage());
+                    oos.writeObject(plugin.stockOwnership);
+
+                    if (config.verbose == true) {
+                        System.out.println("[StockExchange] Ownership data saved to file successfully.");
+                    }
+
+                    oos.close();
+                } catch (IOException e) {
+                    System.err.println("[StockExchange] Error! Unable to save ownership data to file: " + e.getMessage());
+                }
+            }
+        }
+        
+        if (config.fileTypes.contains("YML")) {
+            configFile = new Configuration(new File(plugin.getDataFolder(), "ownership.yml"));
+            configFile.load();
+            if (plugin.stockOwnership.size() > 0) {
+                Iterator<String> i = plugin.stockOwnership.keySet().iterator();
+                while (i.hasNext()) {
+                    String val1 = i.next();
+                    double val2 = plugin.stockOwnership.get(val1);
+                    configFile.setProperty("ownership." + val1, val2);
+                }
+                configFile.save();
             }
         }
     }
     
     public void loadOwnership() {
-        file = new File(plugin.getDataFolder(),"ownership.dat");
-        try {
-            if (!file.exists()) {
-                plugin.getDataFolder().mkdir();
-                file.createNewFile();
-                System.out.println("[StockExchange] Created ownership.dat data file successfully.");
-            } else {
-                FileInputStream fis = new FileInputStream(file);
-                ObjectInputStream ois = new ObjectInputStream(fis);
-                
-                plugin.stockOwnership = new HashMap((HashMap)ois.readObject());
-                if (config.verbose == true) {
-                    System.out.println("[StockExchange] Loaded ownership data successfully.");
-                }
+        if (config.loadType.equalsIgnoreCase("DAT")) {
+            file = new File(plugin.getDataFolder(),"ownership.dat");
+            try {
+                if (!file.exists()) {
+                    plugin.getDataFolder().mkdir();
+                    file.createNewFile();
+                    System.out.println("[StockExchange] Created ownership.dat data file successfully.");
+                } else {
+                    FileInputStream fis = new FileInputStream(file);
+                    ObjectInputStream ois = new ObjectInputStream(fis);
 
-                ois.close();
+                    plugin.stockOwnership = new HashMap((HashMap)ois.readObject());
+                    if (config.verbose == true) {
+                        System.out.println("[StockExchange] Loaded ownership data successfully. (DAT)");
+                    }
+
+                    ois.close();
+                }
+            } catch (IOException e) {
+                System.err.println("[StockExchange] Error! Unable to load ownership data: " + e.getMessage());
+            } catch (ClassNotFoundException e) {
+                System.err.println("[StockExchange] Error! Unable to load ownership data: " + e.getMessage());
             }
-        } catch (IOException e) {
-            System.err.println("[StockExchange] Error! Unable to load ownership data: " + e.getMessage());
-        } catch (ClassNotFoundException e) {
-            System.err.println("[StockExchange] Error! Unable to load ownership data: " + e.getMessage());
+        } else if (config.loadType.equalsIgnoreCase("YML")) {
+            file = new File(plugin.getDataFolder(), "ownership.yml");
+            configFile = new Configuration(file);
+            configFile.load();
+            if (file.exists()) {
+                Iterator<String> i = configFile.getKeys("ownership").iterator();
+                while (i.hasNext()) {
+                    String s = i.next();
+                    plugin.stockOwnership.put(s, configFile.getInt("ownership." + s, 1));
+                }
+                
+                if (config.verbose == true) {
+                    System.out.println("[StockExchange] Loaded ownership data successfully. (YML)");
+                }
+                
+            }
         }
     }
     

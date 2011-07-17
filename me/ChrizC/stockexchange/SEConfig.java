@@ -1,7 +1,8 @@
 package me.ChrizC.stockexchange;
 
-import java.io.*;
+import java.io.File;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.bukkit.util.config.Configuration;
@@ -13,11 +14,14 @@ public class SEConfig {
     Configuration file;
     
     Boolean checkVersion;
-    Boolean verbose;
-    Boolean refundOnRemoval;
+    boolean verbose;
+    boolean refundOnRemoval;
+    boolean backup;
     
     List<String> stocksLims;
     List<String> privateStocks;
+    String loadType;
+    static List<String> fileTypes = new ArrayList<String>();
     int numOfPrivateStocks;
     int numOfStockLims;
     int defaultLimit;
@@ -40,6 +44,11 @@ public class SEConfig {
             file.setProperty("checkVersion", true);
             file.setProperty("verbose", false);
             file.setProperty("refundOnRemoval", true);
+            
+            file.setProperty("backupOnDisable", true);
+            file.setProperty("fileFormats.DAT", false);
+            file.setProperty("fileFormats.YML", true);
+            
             file.save();
             System.out.println("[StockExchange] Configuration file created with default values!");
         }
@@ -51,11 +60,32 @@ public class SEConfig {
         if (file.getProperty("refundOnRemoval") == null) {
             file.setProperty("refundOnRemoval", true);
         }
+        if (file.getProperty("backupOnDisable") == null) {
+            file.setProperty("backupOnDisable", true);
+        }
+        if (file.getProperty("fileFormats.YML") == null) {
+            file.setProperty("fileFormats.DAT", false);
+            file.setProperty("fileFormats.YML", true);
+        }
+        if (file.getProperty("fileFormats.default") == null) {
+            file.setProperty("fileFormats.default", "YML");
+        }
         file.save();
         
         //Get configs
+        backup = file.getBoolean("backupOnDisable", true);
         checkVersion = file.getBoolean("checkVersion", true);
         refundOnRemoval = file.getBoolean("refundOnRemoval", true);
+        
+        loadType = file.getString("fileFormats.default", "YML");
+        
+        Iterator<String> i = file.getKeys("fileFormats").iterator();
+        while (i.hasNext()) {
+            String s = i.next();
+            if (file.getBoolean("fileFormats." + s, true) == true) {
+                fileTypes.add(s);
+            }
+        }
     }
     
     public void configStocks() {

@@ -30,7 +30,7 @@ public class SEUpdater {
         if (config.checkVersion == true) {
             sendToConsole = console;
             try {
-                url = new URL("http://chrizc.netau.net/checkversion.php?plugin=stockexchange");
+                url = new URL("http://chrizc.co.uk/checkversion.php?plugin=stockexchange");
                 urlConn = url.openConnection();
                 inStream = new InputStreamReader(urlConn.getInputStream());
                 buff = new BufferedReader(inStream);

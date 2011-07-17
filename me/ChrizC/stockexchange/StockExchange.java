@@ -1,6 +1,6 @@
 package me.ChrizC.stockexchange;
 
-import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Event.*;
 import org.bukkit.event.*;
 import org.bukkit.plugin.PluginDescriptionFile;
@@ -22,19 +22,18 @@ public class StockExchange extends JavaPlugin {
     /**
      * To-do list:
      * TODO Figure out how to work "buying out" markets.
-     * TODO Add good/poor economic forecasts.
-     * TODO Add bank account linking.
      * TODO Add buy/sales charges.
-     * TODO Remove fluctuations from main plugin - seperate plugin.
      **/
     
     public static PermissionHandler permissionHandler;
     protected final SEConfig config = new SEConfig(this);
+    private final SEDateHandler dateHandler = new SEDateHandler(this);
+    private final SEBackupHandler backup = new SEBackupHandler(this, config, dateHandler);
     protected final SEFileHandler fileHandler = new SEFileHandler(this, config);
     private final SEHelper helper = new SEHelper(this);
     private final SEMarketHandler marketHandler = new SEMarketHandler(this, config);
     private final SEPluginListener pluginListener = new SEPluginListener(this);
-    private final SECommandListener cmdHandler = new SECommandListener(this, marketHandler, config, fileHandler, helper);
+    private final SECommandListener cmdHandler = new SECommandListener(this, marketHandler, config, fileHandler, helper, backup);
     private final SEUpdater updater = new SEUpdater(this, config);
     public Method Method = null;
     
@@ -47,6 +46,9 @@ public class StockExchange extends JavaPlugin {
     public void onDisable() {
         fileHandler.saveMarket();
         fileHandler.saveOwnership();
+        if (config.backup == true) {
+            backup.backup();
+        }
         System.out.println("[StockExchange] disabled.");
     }
     
@@ -82,5 +84,17 @@ public class StockExchange extends JavaPlugin {
             }
         }
     }  
+    
+    public boolean checkPermissions(String node, Player player, boolean opcheck) {
+        if (this.permissionHandler != null) {
+            return this.permissionHandler.has(player, node);
+        } else {
+            if (opcheck == true) {
+                return player.isOp();
+            } else {
+                return false;
+            }
+        }
+    }
 
 }
