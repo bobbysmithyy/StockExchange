@@ -94,6 +94,7 @@ public class SEHelper {
                 event.sendMessage(ChatColor.DARK_PURPLE + "/stocks " + ChatColor.LIGHT_PURPLE + "gift " + ChatColor.DARK_PURPLE + "[" + ChatColor.WHITE + "player name" + ChatColor.DARK_PURPLE + "] [" + ChatColor.WHITE + "market name" + ChatColor.DARK_PURPLE + "] [" + ChatColor.WHITE + "amount" + ChatColor.DARK_PURPLE + "] " + ChatColor.YELLOW + "Give shares of a market to a user.");
             }
             event.sendMessage(ChatColor.DARK_PURPLE + "/stocks " + ChatColor.LIGHT_PURPLE + "portfolio " + ChatColor.YELLOW + "Display all the stocks you own.");
+            event.sendMessage(ChatColor.DARK_PURPLE + "/stocks " + ChatColor.LIGHT_PURPLE + "list " + ChatColor.DARK_PURPLE + "(" + ChatColor.WHITE + "amount" + ChatColor.DARK_PURPLE + ") " + ChatColor.YELLOW + "Display a list of the available public markets, in alphabetical order.");
             event.sendMessage(" ");
         }
     }
@@ -113,7 +114,7 @@ public class SEHelper {
         event.sendMessage("stocks help   Shows this help dialog.");
         event.sendMessage("stocks top5   Show the top 5 highest priced markets.");
         event.sendMessage("stocks lookup [name]   Lookup a market's price and ownership limit.");
-        event.sendMessage("stocks rollback [number]   Rolls the plugin back to the specified backup.");
-        event.sendMessage("stocks undo   Undoes a previous rollback.");
+        event.sendMessage("stocks list (amount)   Display a list of the available public markets, in alphabetical order.");
+        event.sendMessage("stocks top5   Show the top 5 highest priced markets.");
     }
 }
