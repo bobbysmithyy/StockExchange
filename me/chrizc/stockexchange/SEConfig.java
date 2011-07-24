@@ -77,12 +77,5 @@ public class SEConfig {
         plugin.dbPass = file.getString("database.password", "password");
         plugin.dbDatabase = file.getString("database.dbname", "stockexchange");
         
-    }
-    
-    public void configStocks() {
-        if (new File(plugin.getDataFolder(), "stocks.yml").exists()) {
-            new File(plugin.getDataFolder(), "stocks.yml").delete();
-        }
-    }
-    
+    } 
 }

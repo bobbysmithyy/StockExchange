@@ -88,7 +88,6 @@ public class StockExchange extends JavaPlugin {
         cmdHandler.setupCommands();
         setupPermissions();
         databaseHandler.setupDatabases();
-        config.configStocks();
         PluginDescriptionFile pdfFile = this.getDescription();
         this.log.info(this.logPrefix + "version v" + pdfFile.getVersion() + " is enabled.");
         if (pdfFile.getVersion().contains("dev")) {

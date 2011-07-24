@@ -212,7 +212,7 @@ public class SECommandListener {
                         marketHandler.list(event, Integer.parseInt(args[1]));
                     }
                 } else {
-                    marketHandler.top5(event);
+                    marketHandler.list(event, 5);
                 }
             }
         }

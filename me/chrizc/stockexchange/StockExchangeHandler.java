@@ -1,16 +1,16 @@
 package me.chrizc.stockexchange;
 
-import java.util.HashMap;
+/*import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ArrayList;
+import java.util.ArrayList;*/
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.bukkit.command.CommandSender;
 
-import org.bukkit.entity.Player;
+//import org.bukkit.entity.Player;
 
 import me.chrizc.stockexchange.exceptions.*;
 

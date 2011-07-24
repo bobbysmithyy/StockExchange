@@ -1,6 +1,6 @@
 package me.chrizc.stockexchange;
 
-import org.bukkit.entity.Player;
+//import org.bukkit.entity.Player;
 import org.bukkit.Bukkit;
 
 public class StockExchangeListener {
