@@ -4,6 +4,8 @@ Changes:
 * Rewrote plugin to use MySQL or (if MySQL is disabled) SQLite. This should (hopefully) fix all data wipe issues, as well as provide extra functionality later on.
 * When list command is used without an argument, it displays a list of length 5, instead of the top5 list.
 * Cleaned up a shitload of code.
+* Changed portfolio to display the price the stocks were purchased at.
+* Changed it so when stocks are sold, the plugin reports if you made a profit, loss, or if you broke even.
 
 Removals:
 - Removed rollback and undo commands.
