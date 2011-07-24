@@ -1,0 +1,20 @@
+StockExchange v2.0dev CHANGELOG
+
+Changes:
+* Rewrote plugin to use MySQL or (if MySQL is disabled) SQLite. This should (hopefully) fix all data wipe issues, as well as provide extra functionality later on.
+* When list command is used without an argument, it displays a list of length 5, instead of the top5 list.
+* Cleaned up a shitload of code.
+
+Removals:
+- Removed rollback and undo commands.
+- Removed save and save-all commands.
+- Removed stocks.yml file.
+- Removed market and ownership files.
+- Broke *most* of the API for now, until I re-write it for SQL.
+
+Additions:
++ Added SQL support!
++ Added "all" argument to list command.
++ Added SuperPerms support.
+
+There's probably some more but I can't remember right now.
