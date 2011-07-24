@@ -1,16 +1,24 @@
-package me.ChrizC.stockexchange;
+package me.chrizc.stockexchange;
 
-import org.bukkit.Bukkit;
+import com.alta189.sqllibrary.mysql.mysqlCore;
+import com.alta189.sqllibrary.sqlite.sqlCore;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Event.*;
 import org.bukkit.event.*;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.permissions.Permission;
+import org.bukkit.permissions.PermissionDefault;
 
-import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.logging.Logger;
+
+import java.net.MalformedURLException;
+
+import java.sql.ResultSet;
 
 import com.nijikokun.register.payment.Method;
 
@@ -21,36 +29,53 @@ public class StockExchange extends JavaPlugin {
     
     /**
      * To-do list:
-     * TODO Add good/poor economic forecasts.
-     * TODO Add bank account linking.
+     * TODO Figure out how to work "buying out" markets.
      * TODO Add buy/sales charges.
      **/
     
+    public String logPrefix = "[StockExchange] "; // Prefix to go in front of all log entries
+    public Logger log = Logger.getLogger("Minecraft"); // Minecraft log and console
+    
+    //MySQL handlers
+    public mysqlCore manageMySQL;
+    public sqlCore manageSQLite;
+    
+    //MySQL settings variables
+    public boolean MySQL = false;
+    public String dbHost = null;
+    public String dbUser = null;
+    public String dbPass = null;
+    public String dbDatabase = null;
+    
     public static PermissionHandler permissionHandler;
     protected final SEConfig config = new SEConfig(this);
-    protected final SEFileHandler fileHandler = new SEFileHandler(this, config);
-    protected final SEScheduleHandler scheduleHandler = new SEScheduleHandler(this);
     private final SEHelper helper = new SEHelper(this);
-    private final SEMarketHandler marketHandler = new SEMarketHandler(this, config);
+    private final SEDatabaseHandler databaseHandler = new SEDatabaseHandler(this, config);
+    public final SEMarketHandler marketHandler = new SEMarketHandler(this, config);
     private final SEPluginListener pluginListener = new SEPluginListener(this);
-    private final SECommandListener cmdHandler = new SECommandListener(this, marketHandler, scheduleHandler, config, fileHandler, helper);
+    private final SECommandListener cmdHandler = new SECommandListener(this, marketHandler, config, helper);
     private final SEUpdater updater = new SEUpdater(this, config);
-    private final StockExchangeListener listener = new StockExchangeListener(this);
     public Method Method = null;
     
     protected static Set<StockExchangeListener> listeners = new HashSet<StockExchangeListener>();
     
-    static HashMap<String, Double> market = new HashMap<String, Double>();
-    static HashMap<String, Integer> stockOwnership = new HashMap<String, Integer>();
+    //static HashMap<String, Double> market = new HashMap<String, Double>();
+    //static HashMap<String, Integer> stockOwnership = new HashMap<String, Integer>();
     
     @Override
     public void onDisable() {
-        if (scheduleHandler.taskId != 0) {
-            Bukkit.getServer().getScheduler().cancelTask(scheduleHandler.taskId);
+        if (this.MySQL == true) {
+            this.manageMySQL.close();
+            if (config.verbose == true) {
+                this.log.info(this.logPrefix + "MySQL connection closed.");
+            }
+        } else {
+            this.manageSQLite.close();
+            if (config.verbose == true) {
+                this.log.info(this.logPrefix + "SQLite connection closed.");
+            }
         }
-        fileHandler.saveMarket();
-        fileHandler.saveOwnership();
-        System.out.println("[StockExchange] disabled.");
+        this.log.info(this.logPrefix + "Disabled.");
     }
     
     @Override
@@ -62,17 +87,13 @@ public class StockExchange extends JavaPlugin {
         updater.update(true);
         cmdHandler.setupCommands();
         setupPermissions();
-        fileHandler.loadMarket();
-        fileHandler.loadOwnership();
+        databaseHandler.setupDatabases();
         config.configStocks();
-        if (config.flucsEnabled == true) {
-            scheduleHandler.fluctuate(config.min, config.max, config.delay, config.broadcast);
-        }
         PluginDescriptionFile pdfFile = this.getDescription();
-        System.out.println("[StockExchange] version v" + pdfFile.getVersion() + " is enabled.");
+        this.log.info(this.logPrefix + "version v" + pdfFile.getVersion() + " is enabled.");
         if (pdfFile.getVersion().contains("dev")) {
-            System.out.println("[StockExchange] Warning: you are using a DEVELOPMENT build.");
-            System.out.println("[StockExchange] Warning: Be sure to back up your worlds, and report all bugs to the thread.");
+            this.log.warning(this.logPrefix + "Warning: you are using a DEVELOPMENT build.");
+            this.log.warning(this.logPrefix + "Warning: Be sure to back up your worlds, and report all bugs to the thread.");
         }
     }
     
@@ -82,14 +103,111 @@ public class StockExchange extends JavaPlugin {
       if (this.permissionHandler == null) {
             if (permissionsPlugin != null) {
                 this.permissionHandler = ((Permissions) permissionsPlugin).getHandler();
-                System.out.println("[StockExchange] hooked into Permissions.");
+                this.log.info(this.logPrefix + "hooked into Permissions.");
             } else {
-                System.out.println("[StockExchange] Permissions not found, defaulting to ops.txt");
+                this.log.info(this.logPrefix + "Permissions not found, defaulting to SuperPerms.");
             }
         }
     }  
     
-    //public static SEScheduleHandler getSchedule() {
-        //return scheduleHandler;
-    //}
+    public boolean checkPermissions(String node, Player player) {
+        
+        if (node.contains("users.private.")) {
+            if (this.permissionHandler != null) {
+                return this.permissionHandler.has(player, node);
+            } else {
+                Permission p = new Permission(node, PermissionDefault.OP);
+                return player.hasPermission(p);
+            }
+        }
+        
+        if (this.permissionHandler != null) {
+            return this.permissionHandler.has(player, node);
+        } else {
+            return player.hasPermission(node);
+        }
+    }
+    
+    public boolean updateQuery(String query) {
+        if (this.MySQL) {
+            try {
+                this.manageMySQL.updateQuery(query);
+                return true;
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+            return false;
+        } else {
+            this.manageSQLite.updateQuery(query);
+            return true;
+        }
+    }
+    
+    public ResultSet doQuery(String query) {
+        ResultSet result = null;
+        if (this.MySQL) {
+            try {
+                result = this.manageMySQL.sqlQuery(query);
+                return result;
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+            return null;
+        } else {
+            return this.manageSQLite.sqlQuery(query);
+        }
+    }
+    
+    public boolean insertQuery(String query) {
+        if (this.MySQL) {
+            try {
+                this.manageMySQL.insertQuery(query);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+                return false;
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+                return false;
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+                return false;
+            }
+            return true;
+        } else {
+            this.manageSQLite.insertQuery(query);
+            return true;
+        }
+    }
+    
+    public boolean deleteQuery(String query) {
+        if (this.MySQL) {
+            try {
+                this.manageMySQL.insertQuery(query);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+                return false;
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+                return false;
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+                return false;
+            }
+            return true;
+        } else {
+            this.manageSQLite.insertQuery(query);
+            return true;
+        }
+    }
+    
+    
+
 }

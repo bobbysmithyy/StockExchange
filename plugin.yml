@@ -1,13 +1,29 @@
 name: StockExchange
-main: me.ChrizC.stockexchange.StockExchange
-version: 1.6
+main: me.chrizc.stockexchange.StockExchange
+version: 2.0dev
 author: ChrizC
 description: StockExchange allows your users to trade in fictional stocks, making a profit in your in-game economy!
 commands:
   stocks:
     description: Interact with stocks.
-    usage: <command> <top5|add|remove|increase|decrease|lookup|buy|sell|stop|start|limit>
     aliases:
       - market
       - stock
+permissions:
+  stocks.admin.*:
+    default: op
+    children:
+      stocks.admin.add: true
+      stocks.admin.remove: true
+      stocks.admin.modify: true
+      stocks.admin.limit: true
+      stocks.admin.private: true
+      stock.admin.public: true
+  stocks.users.*:
+    default: true
+    children:
+      stocks.users.top5: true
+      stocks.users.lookup: true
+      stocks.users.trade: true
+      stocks.users.gift: true
 website: http://chrizc.co.uk/index.php?url=plugins

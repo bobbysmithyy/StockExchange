@@ -1,6 +1,5 @@
-package me.ChrizC.stockexchange;
+package me.chrizc.stockexchange;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -15,21 +14,17 @@ public class SECommandListener {
     
     private final StockExchange plugin;
     SEMarketHandler marketHandler;
-    SEScheduleHandler scheduleHandler;
     SEConfig config;
-    SEFileHandler fileHandler;
     SEHelper helper;
     
     Player player;
     
     List list = new ArrayList();
     
-    public SECommandListener(StockExchange instance, SEMarketHandler marketHandler, SEScheduleHandler scheduleHandler, SEConfig config, SEFileHandler fileHandler, SEHelper helper) {
+    public SECommandListener(StockExchange instance, SEMarketHandler marketHandler, SEConfig config, SEHelper helper) {
         plugin = instance;
         this.marketHandler = marketHandler;
-        this.scheduleHandler = scheduleHandler;
         this.config = config;
-        this.fileHandler = fileHandler;
         this.helper = helper;
     }
     
@@ -58,155 +53,84 @@ public class SECommandListener {
         player = (Player) event;
         if (args.length >= 1) {
             if (args[0].equals("top5")) {
-                if (plugin.permissionHandler != null && plugin.permissionHandler.has(player, "stocks.users.top5")) {
-                    marketHandler.top5(event);
-                } else if (plugin.permissionHandler == null) {
-                    marketHandler.top5(event);
-                }
+                marketHandler.top5(event);
             } else if (args[0].equals("add")) {
-                if (plugin.permissionHandler != null && plugin.permissionHandler.has(player, "stocks.admin.add")) {
+                if (plugin.checkPermissions("stocks.admin.add", player) == true) {
                     if (args.length == 2) {
-                        marketHandler.add(player, args[1], 1.0);
+                        marketHandler.add(event, args[1], 1.0);
                     } else if (args.length >= 3) {
-                        marketHandler.add(player, args[1], Double.parseDouble(args[2]));
+                        marketHandler.add(event, args[1], Double.parseDouble(args[2]));
                     }
-                } else if (plugin.permissionHandler == null && player.isOp()) {
-                    if (args.length == 2) {
-                        marketHandler.add(player, args[1], 1.0);
-                    } else if (args.length >= 3) {
-                        marketHandler.add(player, args[1], Double.parseDouble(args[2]));
-                    }
-                } 
+                }
             } else if (args[0].equals("remove") && args.length > 1) {
-                if (plugin.permissionHandler != null && plugin.permissionHandler.has(player, "stocks.admin.remove")) {
-                    marketHandler.remove(player, args[1]);
-                } else if (plugin.permissionHandler == null && player.isOp()) {
+                if (plugin.checkPermissions("stocks.admin.remove", player) == true) {
                     marketHandler.remove(player, args[1]);
                 }
             } else if (args[0].equals("lookup") && args.length > 1) {
-                if (plugin.permissionHandler != null && plugin.permissionHandler.has(player, "stocks.users.lookup")) {
-                    marketHandler.lookup(player, args[1]);
-                } else if (plugin.permissionHandler == null) {
+                if (plugin.checkPermissions("stocks.users.lookup", player) == true) {
                     marketHandler.lookup(player, args[1]);
                 } 
             } else if (args[0].equals("buy") && args.length > 2) {
-                if (plugin.permissionHandler != null && plugin.permissionHandler.has(player, "stocks.users.trade")) {
-                    if (args[2].equals("max")) {
-                        if (config.privateStocks.contains(args[1])) {
-                            if (plugin.permissionHandler.has(player, "stocks.users.private." + args[1])) {
-                                marketHandler.buymax(player, args[1]);
-                            } else {
-                                player.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] You do not have the required permission level to do this.");
-                            }
-                        } else {
-                            marketHandler.buymax(player, args[1]);
-                        }
-                    } else {
-                        if (config.privateStocks.contains(args[1])) {
-                            if (plugin.permissionHandler.has(player, "stocks.users.private." + args[1])) {
-                                marketHandler.buy(player, args[1], Integer.parseInt(args[2]));
-                            } else {
-                                player.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] You do not have the required permission level to do this.");
-                            }
-                        } else {
-                            marketHandler.buy(player, args[1], Integer.parseInt(args[2]));
-                        }
-                    }
-                } else if (plugin.permissionHandler == null) {
+                if (plugin.checkPermissions("stocks.users.trade", player) == true) {
                     if (args[2].equals("max")) {
                         marketHandler.buymax(player, args[1]);
-                    } else {
+                    } else if (Integer.parseInt(args[2]) > 0) {
                         marketHandler.buy(player, args[1], Integer.parseInt(args[2]));
+                    } else {
+                        player.sendMessage(ChatColor.RED + "[Stocks] Incorrect number!");
                     }
-                } 
+                }
             } else if (args[0].equals("sell") && args.length > 2) {
-                if (plugin.permissionHandler != null && plugin.permissionHandler.has(player, "stocks.users.trade")) {
-                    if (args[2].equals("all")) {
+                if (plugin.checkPermissions("stocks.users.trade", player) == true) {
+                    if (args[2].equals("all") || args[2].equals("max")) {
                         marketHandler.sellall(player, args[1]);
                     } else {
-                        marketHandler.sell(player, args[1], Integer.parseInt(args[2]));
-                    }
-                } else if (plugin.permissionHandler == null) {
-                    if (args[2].equals("all")) {
-                        marketHandler.sellall(player, args[1]);
-                    } else {
-                        marketHandler.sell(player, args[1], Integer.parseInt(args[2]));
+                        if (Integer.parseInt(args[2]) > 0) {
+                            marketHandler.sell(player, args[1], Integer.parseInt(args[2]));
+                        } else {
+                            player.sendMessage(ChatColor.RED + "[Stocks] Incorrect number!");
+                        }
                     }
                 } 
             } else if (args[0].equals("increase") && args.length > 2) {
-                if (plugin.permissionHandler != null && plugin.permissionHandler.has(player, "stocks.admin.modify")) {
-                    marketHandler.increase(player, args[1], Double.parseDouble(args[2]));
-                } else if (plugin.permissionHandler == null && player.isOp()) {
-                    marketHandler.increase(player, args[1], Double.parseDouble(args[2]));
-                } 
-            } else if (args[0].equals("decrease") && args.length > 2) {
-                if (plugin.permissionHandler != null && plugin.permissionHandler.has(player, "stocks.admin.modify")) {
-                    marketHandler.decrease(player, args[1], Double.parseDouble(args[2]));
-                } else if (plugin.permissionHandler == null && player.isOp()) {
-                    marketHandler.decrease(player, args[1], Double.parseDouble(args[2]));
-                } 
-            } else if (args[0].equals("stop")) {
-                if (plugin.permissionHandler != null && plugin.permissionHandler.has(player, "stocks.admin.schedule")) {
-                    if (scheduleHandler.isFluctuating == true) {
-                        Bukkit.getServer().getScheduler().cancelTask(scheduleHandler.taskId);
-                        scheduleHandler.taskId = 0;
-                        player.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] Stock fluctuations stopped!");
-                    }
-                } else if (plugin.permissionHandler == null && player.isOp()) {
-                    if (scheduleHandler.isFluctuating == true) {
-                        Bukkit.getServer().getScheduler().cancelTask(scheduleHandler.taskId);
-                        scheduleHandler.taskId = 0;
-                        scheduleHandler.isFluctuating = false;
-                        player.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] Stock fluctuations stopped!");
+                if (plugin.checkPermissions("stocks.admin.modify", player) == true) {
+                    if (Double.parseDouble(args[2]) > 0) {
+                        marketHandler.increase(player, args[1], Double.parseDouble(args[2]));
+                    } else {
+                        player.sendMessage(ChatColor.RED + "[Stocks] Incorrect number!");
                     }
                 }
-            } else if (args[0].equals("start")) {
-                if (plugin.permissionHandler != null && plugin.permissionHandler.has(player, "stocks.admin.schedule")) {
-                    if (config.flucsEnabled == true) {
-                        if (scheduleHandler.isFluctuating == false) {
-                            scheduleHandler.fluctuate(config.min, config.max, config.delay, config.broadcast);
-                            player.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] Stock fluctuations started!");
-                        }
-                    }
-                } else if (plugin.permissionHandler == null && player.isOp()) {
-                    if (config.flucsEnabled == true) {
-                        if (scheduleHandler.isFluctuating == false) {
-                            scheduleHandler.fluctuate(config.min, config.max, config.delay, config.broadcast);
-                            player.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] Stock fluctuations started!");
-                        }
+            } else if (args[0].equals("decrease") && args.length > 2) {
+                if (plugin.checkPermissions("stocks.admin.modify", player) == true) {
+                    if (Double.parseDouble(args[2]) > 0) {
+                        marketHandler.decrease(player, args[1], Double.parseDouble(args[2]));
+                    } else {
+                        player.sendMessage(ChatColor.RED + "[Stocks] Incorrect number!");
                     }
                 }
             } else if (args[0].equals("portfolio") || args[0].equals("showmine")) {
                 marketHandler.portfolio(player);
             } else if (args[0].equals("limit")) {
                 if (args.length == 3) {
-                    if (plugin.permissionHandler != null && plugin.permissionHandler.has(player, "stocks.admin.limit")) {
-                        marketHandler.limit(event, args[1], Integer.parseInt(args[2]));
-                    } else if (plugin.permissionHandler == null && player.isOp()) {
+                    if (plugin.checkPermissions("stocks.admin.limit", player) == true) {
                         marketHandler.limit(event, args[1], Integer.parseInt(args[2]));
                     }
                 }
-            } else if (args[0].equals("giveto") || args[0].equals("gift") || args[0].equals("give")) {
-                if (args.length == 4) {
-                    if (plugin.permissionHandler != null && plugin.permissionHandler.has(player, "stocks.users.gift")) {
-                        marketHandler.gift(player, args[1], args[2], Integer.parseInt(args[3]));
-                    } else if (plugin.permissionHandler == null) {
-                        marketHandler.gift(player, args[1], args[2], Integer.parseInt(args[3]));
-                    }
-                }
+            //} else if (args[0].equals("giveto") || args[0].equals("gift") || args[0].equals("give")) {
+                //if (args.length == 4) {
+                    //if (plugin.checkPermissions("stocks.users.gift", player) == true) {
+                        //marketHandler.gift(player, args[1], args[2], Integer.parseInt(args[3]));
+                    //}
+                //}
             } else if (args[0].equals("private")) {
                 if (args.length == 2) {
-                    if (plugin.permissionHandler != null && plugin.permissionHandler.has(player, "stocks.admin.private")) {
-                        marketHandler.makePrivate(event, args[1]);
-                    } else if (plugin.permissionHandler == null && player.isOp()) {
+                    if (plugin.checkPermissions("stocks.admin.private", player) == true) {
                         marketHandler.makePrivate(event, args[1]);
                     }
                 }
             } else if (args[0].equals("public")) {
                 if (args.length == 2) {
-                    if (plugin.permissionHandler != null && plugin.permissionHandler.has(player, "stocks.admin.public")) {
-                        marketHandler.makePublic(event, args[1]);
-                    } else if (plugin.permissionHandler == null && player.isOp()) {
+                    if (plugin.checkPermissions("stocks.admin.public", player) == true) {
                         marketHandler.makePublic(event, args[1]);
                     }
                 }
@@ -225,6 +149,16 @@ public class SECommandListener {
                     if (args[1].equals("admin")) {
                         helper.helpMe(event, "admin");
                     }
+                }
+            } else if (args[0].equals("list")) {
+                if (args.length > 1) {
+                    if (args[1].equals("all")) {
+                        marketHandler.listAll(event);
+                    } else {
+                        marketHandler.list(event, Integer.parseInt(args[1]));
+                    }
+                } else {
+                    marketHandler.list(event, 5);
                 }
             }
         }
@@ -245,36 +179,16 @@ public class SECommandListener {
             } else if (args[0].equals("lookup") && args.length > 1) {
                 marketHandler.lookup(event, args[1]);
             } else if (args[0].equals("increase") && args.length > 2) {
-                marketHandler.increase(event, args[1], Double.parseDouble(args[2]));
-            } else if (args[0].equals("decrease") && args.length > 2) {
-                marketHandler.decrease(event, args[1], Double.parseDouble(args[2]));
-            } else if (args[0].equals("stop")) {
-                if (scheduleHandler.isFluctuating == true) {
-                    Bukkit.getServer().getScheduler().cancelTask(scheduleHandler.taskId);
-                    scheduleHandler.taskId = 0;
-                    scheduleHandler.isFluctuating = false;
-                    event.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] Stock fluctuations stopped!");
-                }
-            } else if (args[0].equals("start")) {
-                if (config.flucsEnabled == true) {
-                    if (scheduleHandler.isFluctuating == false) {
-                        scheduleHandler.fluctuate(config.min, config.max, config.delay, config.broadcast);
-                        event.sendMessage(ChatColor.DARK_PURPLE + "[Stocks] Stock fluctuations started!");
-                    }
-                }
-            } else if (args[0].equals("rollback")) {
-                if (args.length == 2) {
-                    if (fileHandler.rollback(Integer.parseInt(args[1])) == true) {
-                        event.sendMessage("[Stocks] Successfully rolled back to backup #" + args[1]);
-                    } else {
-                        System.err.println("[Stocks] Error in rolling back to backup #" + args[1] + ". (Does the backup exist?)");
-                    }
-                }
-            } else if (args[0].equals("undo")) {
-                if (fileHandler.undo() == true) {
-                    event.sendMessage("[Stocks] Successfully undid rollback.");
+                if (Double.parseDouble(args[2]) > 0) {
+                    marketHandler.increase(event, args[1], Double.parseDouble(args[2]));
                 } else {
-                    System.err.println("[Stocks] Unknown error in undoing rollback!");
+                    event.sendMessage(ChatColor.RED + "[Stocks] Incorrect number!");
+                }
+            } else if (args[0].equals("decrease") && args.length > 2) {
+            if (Double.parseDouble(args[2]) > 0) {
+                    marketHandler.decrease(event, args[1], Double.parseDouble(args[2]));
+                } else {
+                    event.sendMessage(ChatColor.RED + "[Stocks] Incorrect number!");
                 }
             } else if (args[0].equals("limit")) {
                 if (args.length == 3) {
@@ -290,6 +204,16 @@ public class SECommandListener {
                 }
             } else if (args[0].equals("help")) {
                 helper.consoleHelpMe(event);
+            } else if (args[0].equals("list")) {
+                if (args.length > 1) {
+                    if (args[1].equals("all")) {
+                        marketHandler.listAll(event);
+                    } else {
+                        marketHandler.list(event, Integer.parseInt(args[1]));
+                    }
+                } else {
+                    marketHandler.top5(event);
+                }
             }
         }
     }

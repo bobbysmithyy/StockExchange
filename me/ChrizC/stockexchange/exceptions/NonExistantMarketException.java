@@ -1,4 +1,4 @@
-package me.ChrizC.stockexchange.exceptions;
+package me.chrizc.stockexchange.exceptions;
 
 public class NonExistantMarketException extends Exception {
     

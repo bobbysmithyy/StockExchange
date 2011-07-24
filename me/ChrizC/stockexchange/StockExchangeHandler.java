@@ -1,45 +1,34 @@
-package me.ChrizC.stockexchange;
+package me.chrizc.stockexchange;
 
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import org.bukkit.command.CommandSender;
+
 import org.bukkit.entity.Player;
 
-import me.ChrizC.stockexchange.exceptions.*;
+import me.chrizc.stockexchange.exceptions.*;
 
 public class StockExchangeHandler {
     
     StockExchange plugin;
-    SEScheduleHandler schedule;
     SEConfig config;
-    SEFileHandler fileHandle;
     
     public StockExchangeHandler(StockExchange instance) {
         plugin = instance;
-        schedule = plugin.scheduleHandler;
         config = plugin.config;
-        fileHandle = plugin.fileHandler;
     }
     
-    //Check if fluctuations are happening.
-    public boolean isFluctating() { return schedule.isFluctuating; }
-    
-    //Do we broadcast?
-    public boolean broadcastOnFluctuate() { return schedule.broadcasting; }
-    
-    //What's the maximum fluctuation?
-    public double getMaxFluctuation() { return schedule.maximum; }
-    
-    //What's the minimum fluctuation?
-    public double getMinFluctuation() { return schedule.minimum; }
-    
-    //What's the stock ownership limit?
-    public int getStockLimit(String marketName) { return config.checkLimit(marketName); }
+    /*What's the stock ownership limit?
+    //public int getStockLimit(String marketName) { return config.checkLimit(marketName); }
     
     //What's the default limit?
-    public int getDefaultLimit() { return config.defaultLimit; }
+    //public int getDefaultLimit() { return config.defaultLimit; }
     
     //Is the plugin in verbose mode?
     public boolean isVerbose() { return config.verbose; }
@@ -62,34 +51,55 @@ public class StockExchangeHandler {
     public HashMap<String, Double> getStocks() { return plugin.market; }
     
     //Is stock private?
-    public boolean isPrivate(String marketName) { return config.privateStocks.contains(marketName); }
+    public boolean isPrivate(String marketName) { return config.privateStocks.contains(marketName); }*/
     
-    public void decreaseStockValue(String marketName, double amount) throws AttemptedNegativeException, NonExistantMarketException {
-        if (amount > plugin.market.get(marketName)) {
-            throw new AttemptedNegativeException("You can't send a stock into negatives.");
-        }
-        if (!plugin.market.containsKey(marketName)) {
-            throw new NonExistantMarketException("That market does not exist.");
-        }
+    public void decreaseStockValue(CommandSender sender, String marketName, double amount) throws NonExistantMarketException, AttemptedNegativeException, QueryException {
+      String checkQuery = "SELECT COUNT(*) AS 'Count', price FROM market WHERE name = '" + marketName + "' LIMIT 1;";
+        ResultSet checkResult = plugin.doQuery(checkQuery);
         
-        plugin.market.put(marketName, plugin.market.get(marketName) - amount);
-        for (StockExchangeListener m : plugin.listeners) {
+        try {
+            if (checkResult.next() && checkResult.getInt("Count") == 1) {
+                if (amount <= checkResult.getDouble("price")) {
+                    String query = "UPDATE market SET price = price - " + amount + " WHERE name = '" + marketName + "' LIMIT 1;";
+                    if (plugin.updateQuery(query) == false) {
+                        throw new QueryException("Unspecified error with SQL update! Alert the server admin.");
+                    }
+                } else {
+                    throw new AttemptedNegativeException("You can't send a market into negatives!");
+                }
+            } else {
+                throw new NonExistantMarketException("That market does not exist!");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        /*for (StockExchangeListener m : plugin.listeners) {
             m.onStockDecrease(marketName, amount);
-        }
+        }*/
     }
     
-    public void increaseStockValue(String marketName, double amount) throws NonExistantMarketException {
-        if (!plugin.market.containsKey(marketName)) {
-            throw new NonExistantMarketException("That market does not exist.");
-        }   
+    public void increaseStockValue(CommandSender sender, String marketName, double amount) throws NonExistantMarketException, QueryException {
+        String checkQuery = "SELECT COUNT(*) AS 'Count', price FROM market WHERE name = '" + marketName + "' LIMIT 1;";
+        ResultSet checkResult = plugin.doQuery(checkQuery);
         
-        plugin.market.put(marketName, plugin.market.get(marketName) + amount);
-        for (StockExchangeListener m : plugin.listeners) {
+        try {
+            if (checkResult.next() && checkResult.getInt("Count") == 1) {
+                String query = "UPDATE market SET price = price + " + amount + " WHERE name = '" + marketName + "' LIMIT 1;";
+                if (plugin.updateQuery(query) == false) {
+                    throw new QueryException("Unspecified error with SQL update! Alert the server admin.");
+                }
+            } else {
+                throw new NonExistantMarketException("That market does not exist.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        /*for (StockExchangeListener m : plugin.listeners) {
             m.onStockIncrease(marketName, amount);
-        }   
+        }  */ 
     }
     
-    public void addMarket(String marketName, double initAmount) throws ExistantMarketException, AttemptedNegativeException {
+    /*public void addMarket(String marketName, double initAmount) throws ExistantMarketException, AttemptedNegativeException {
         if (initAmount < 0) {
             throw new AttemptedNegativeException("You cannot define a market with negative stock prices.");
         }
@@ -230,6 +240,6 @@ public class StockExchangeHandler {
                 }
             }
         }
-    }
+    }*/
     
 }

@@ -1,4 +1,4 @@
-package me.ChrizC.stockexchange;
+package me.chrizc.stockexchange;
 
 import com.nijikokun.register.payment.Methods;
 

@@ -1,8 +1,6 @@
-package me.ChrizC.stockexchange;
+package me.chrizc.stockexchange;
 
-import java.io.*;
-import java.util.List;
-import java.util.Iterator;
+import java.io.File;
 
 import org.bukkit.util.config.Configuration;
 
@@ -12,21 +10,9 @@ public class SEConfig {
     
     Configuration file;
     
-    Boolean flucsEnabled;
-    Boolean broadcast;
     Boolean checkVersion;
-    Boolean verbose;
-    Boolean refundOnRemoval;
-    
-    Integer delay = 15;
-    Double max = 4D;
-    Double min = 2D;
-    
-    List<String> stocksLims;
-    List<String> privateStocks;
-    int numOfPrivateStocks;
-    int numOfStockLims;
-    int defaultLimit;
+    boolean verbose;
+    boolean refundOnRemoval;
     
     public SEConfig (StockExchange instance) {
         plugin = instance;
@@ -43,14 +29,18 @@ public class SEConfig {
                 System.out.println("[StockExchange] Configuration file loaded!");
             }
         } else {
-            file.setProperty("naturalFluctuations", true);
-            file.setProperty("fluctuationDelay", 15);
-            file.setProperty("maxFluctuation", 4);
-            file.setProperty("minFluctuation", 2);
-            file.setProperty("broadcastOnFluctuation", false);
             file.setProperty("checkVersion", true);
             file.setProperty("verbose", false);
             file.setProperty("refundOnRemoval", true);
+            
+            file.setProperty("backupOnDisable", true);
+            
+            file.setProperty("useMySQL", false);
+            file.setProperty("database.host", "localhost");
+            file.setProperty("database.username", "root");
+            file.setProperty("database.password", "password");
+            file.setProperty("database.dbname", "stockexchange");
+            
             file.save();
             System.out.println("[StockExchange] Configuration file created with default values!");
         }
@@ -62,65 +52,37 @@ public class SEConfig {
         if (file.getProperty("refundOnRemoval") == null) {
             file.setProperty("refundOnRemoval", true);
         }
+        if (file.getProperty("backupOnDisable") != null) {
+            file.removeProperty("backupOnDisable");
+        }
+        if (file.getProperty("fileFormats.default") != null) {
+            file.removeProperty("fileFormats");
+        }
+        if (file.getProperty("useMySQL") == null) {
+            file.setProperty("useMySQL", false);
+            file.setProperty("database.host", "localhost");
+            file.setProperty("database.username", "root");
+            file.setProperty("database.password", "password");
+            file.setProperty("database.dbname", "stockexchange");
+        }
         file.save();
         
         //Get configs
-        flucsEnabled = file.getBoolean("naturalFluctuations", true);
-        broadcast = file.getBoolean("broadcastOnFluctuation", true);
         checkVersion = file.getBoolean("checkVersion", true);
         refundOnRemoval = file.getBoolean("refundOnRemoval", true);
         
-        delay = file.getInt("fluctuationDelay", delay);
-        max = file.getDouble("maxFluctuation", max);
-        min = file.getDouble("minFluctuation", min);
+        plugin.MySQL = file.getBoolean("useMySQL", false);
+        plugin.dbHost = file.getString("database.host", "localhost");
+        plugin.dbUser = file.getString("database.username", "root");
+        plugin.dbPass = file.getString("database.password", "password");
+        plugin.dbDatabase = file.getString("database.dbname", "stockexchange");
+        
     }
     
     public void configStocks() {
-        file = new Configuration(new File(plugin.getDataFolder(), "stocks.yml"));
-        file.load();
-        
         if (new File(plugin.getDataFolder(), "stocks.yml").exists()) {
-            if (verbose == true) {
-                System.out.println("[StockExchange] Stocks configuration file loaded!");
-            }
-        } else {
-            //Do stocks already exist?
-            if (plugin.market.size() > 0) {
-                Iterator<String> i = plugin.market.keySet().iterator();
-                while (i.hasNext()) {
-                    String s = i.next();
-                    file.setProperty("stocks.limits." + s, 0);
-                }
-            } else {
-                file.setProperty("stocks.limits.example", 250);
-            }
-            
-            file.setProperty("stocks.private.example", true);
-            
-            file.setProperty("defaultLimit", 0);
-            
-            file.save();
-            System.out.println("[StockExchange] Stocks configuration file created with default values!");
+            new File(plugin.getDataFolder(), "stocks.yml").delete();
         }
-        
-        //Updated?
-        if (file.getKeys("stocks.private") == null) {
-            file.setProperty("stocks.private.example", true);
-        }
-        
-        defaultLimit = file.getInt("defaultLimit", 0);
-        privateStocks = file.getKeys("stocks.private");
-        numOfPrivateStocks = privateStocks.size();
-        stocksLims = file.getKeys("stocks.limits");
-        numOfStockLims = stocksLims.size();
-    }
-    
-    public int checkLimit(String stock) {
-        if (file.getProperty("stocks.limits." + stock) != null) {
-            return file.getInt("stocks.limits." + stock, defaultLimit);
-        }
-        
-        return defaultLimit;
     }
     
 }
