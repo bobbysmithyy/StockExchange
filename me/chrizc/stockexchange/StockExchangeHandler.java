@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;*/
 
+import java.net.MalformedURLException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -53,7 +54,61 @@ public class StockExchangeHandler {
     //Is stock private?
     public boolean isPrivate(String marketName) { return config.privateStocks.contains(marketName); }*/
     
-    public void decreaseStockValue(CommandSender sender, String marketName, double amount) throws NonExistantMarketException, AttemptedNegativeException, QueryException {
+    public int numberOfStocks() {
+        String query = "SELECT COUNT(*) AS 'Count' FROM market;";
+        ResultSet result = plugin.doQuery(query);
+        
+        try {
+            if (result.next()) {
+                return result.getInt("Count");
+            } else {
+                return 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+    
+    public boolean updateQuery(String query) {
+        if (plugin.MySQL) {
+            try {
+                plugin.manageMySQL.updateQuery(query);
+                return true;
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+            return false;
+        } else {
+            plugin.manageSQLite.updateQuery(query);
+            return true;
+        }
+    }
+    
+    public ResultSet doQuery(String query) {
+        ResultSet result = null;
+        if (plugin.MySQL) {
+            try {
+                result = plugin.manageMySQL.sqlQuery(query);
+                return result;
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+            return null;
+        } else {
+            return plugin.manageSQLite.sqlQuery(query);
+        }
+    }
+    
+    public void decreaseStockValue(String marketName, double amount) throws NonExistantMarketException, AttemptedNegativeException, QueryException {
       String checkQuery = "SELECT COUNT(*) AS 'Count', price FROM market WHERE name = '" + marketName + "' LIMIT 1;";
         ResultSet checkResult = plugin.doQuery(checkQuery);
         
@@ -78,7 +133,7 @@ public class StockExchangeHandler {
         }*/
     }
     
-    public void increaseStockValue(CommandSender sender, String marketName, double amount) throws NonExistantMarketException, QueryException {
+    public void increaseStockValue(String marketName, double amount) throws NonExistantMarketException, QueryException {
         String checkQuery = "SELECT COUNT(*) AS 'Count', price FROM market WHERE name = '" + marketName + "' LIMIT 1;";
         ResultSet checkResult = plugin.doQuery(checkQuery);
         

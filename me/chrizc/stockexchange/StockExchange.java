@@ -84,7 +84,7 @@ public class StockExchange extends JavaPlugin {
         pm.registerEvent(Event.Type.PLUGIN_ENABLE, pluginListener, Priority.Monitor, this);
         pm.registerEvent(Event.Type.PLUGIN_DISABLE, pluginListener, Priority.Monitor, this);
         config.doConfig();
-        updater.update(true);
+        //updater.update(true);
         cmdHandler.setupCommands();
         setupPermissions();
         databaseHandler.setupDatabases();
